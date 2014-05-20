@@ -67,8 +67,12 @@ public class FileAccess {
 		return Files.createTempDirectory(string, attrs);
 	}
 
-	public static void delete(final Path dir) throws IOException {
-		Files.delete(dir);
+	public static void delete(final Path path) throws IOException {
+		Files.delete(path);
+	}
+
+	public static void delete(final File file) throws IOException {
+		delete(file.toPath());
 	}
 
 	public static boolean isExecutable(final File file) {
@@ -140,5 +144,25 @@ public class FileAccess {
 
 	public static Stream<Path> walkPaths(final Path base) throws IOException {
 		return Files.walk(base);
+	}
+
+	public static void writeString(String str, File descriptionFile)
+			throws IOException {
+		Files.write(descriptionFile.toPath(),
+				str.getBytes(Charset.forName("UTF-8")));
+	}
+
+	public static void createDirectories(Path dir, FileAttribute<?>... attrs)
+			throws IOException {
+		Files.createDirectories(dir, attrs);
+	}
+
+	public static void createFile(Path file, FileAttribute<?>... attrs)
+			throws IOException {
+		Files.createFile(file, attrs);
+	}
+
+	public static void deleteDirectory(File dir) throws IOException {
+		FileUtils.deleteDirectory(dir);
 	}
 }
