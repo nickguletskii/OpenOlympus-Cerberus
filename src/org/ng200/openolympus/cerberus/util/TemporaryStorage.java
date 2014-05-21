@@ -25,7 +25,9 @@ package org.ng200.openolympus.cerberus.util;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -34,9 +36,16 @@ import org.ng200.openolympus.FileAccess;
 
 public class TemporaryStorage implements Closeable {
 	private final Path directory;
+	private static final Path RAMDISK_ROOT = FileSystems.getDefault().getPath(
+			"/tmp/ramdisk");
 
 	public TemporaryStorage() throws IOException {
-		this.directory = FileAccess.createTempDirectory("cerberus");
+		if (Files.exists(TemporaryStorage.RAMDISK_ROOT)) {
+			this.directory = Files.createTempDirectory(
+					TemporaryStorage.RAMDISK_ROOT, "cerberus");
+		} else {
+			this.directory = FileAccess.createTempDirectory("cerberus");
+		}
 	}
 
 	@Override
