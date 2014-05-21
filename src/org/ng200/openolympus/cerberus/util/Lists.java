@@ -24,10 +24,17 @@ package org.ng200.openolympus.cerberus.util;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class Lists {
 	@SafeVarargs
 	public static <T> List<T> from(final T... args) {
 		return Arrays.asList(args);
+	}
+
+	public static <T> Optional<T> first(List<T> list) {
+		if (list.isEmpty())
+			return Optional.ofNullable(null);
+		return Optional.ofNullable(list.get(0));
 	}
 }
