@@ -24,6 +24,10 @@ package org.ng200.openolympus.cerberus;
 
 public class VerifierResult extends AnswerCheckResult {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1381831130193472420L;
 	private final String message;
 	private final AnswerCheckResult.CheckingResultType checkingResultType;
 

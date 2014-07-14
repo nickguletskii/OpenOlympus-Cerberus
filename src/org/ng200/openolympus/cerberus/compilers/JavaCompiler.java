@@ -80,7 +80,9 @@ public class JavaCompiler implements Compiler {
 				Arrays.asList(commandLine.getArguments()));
 
 		final DefaultExecutor executor = new DefaultExecutor();
-		executor.setExitValues(new int[] { 0, 1 });
+		executor.setExitValues(new int[] {
+		                                  0
+		});
 
 		final ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
 		executor.setStreamHandler(new PumpStreamHandler(null, errorStream, null));

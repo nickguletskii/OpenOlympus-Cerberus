@@ -27,14 +27,15 @@ import java.util.List;
 import java.util.Optional;
 
 public class Lists {
+	public static <T> Optional<T> first(final List<T> list) {
+		if (list.isEmpty()) {
+			return Optional.ofNullable(null);
+		}
+		return Optional.ofNullable(list.get(0));
+	}
+
 	@SafeVarargs
 	public static <T> List<T> from(final T... args) {
 		return Arrays.asList(args);
-	}
-
-	public static <T> Optional<T> first(List<T> list) {
-		if (list.isEmpty())
-			return Optional.ofNullable(null);
-		return Optional.ofNullable(list.get(0));
 	}
 }

@@ -22,13 +22,50 @@
  */
 package org.ng200.openolympus.cerberus;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Map;
 
-public class SolutionResult {
+public class SolutionResult implements Serializable {
 	public static enum Result {
-		OK, TIME_LIMIT, MEMORY_LIMIT, OUTPUT_LIMIT, RUNTIME_ERROR, INTERNAL_ERROR, SECURITY_VIOLATION, COMPILE_ERROR, PRESENTATION_ERROR, WRONG_ANSWER
-	};
+		OK("solution.result.ok"),
+
+		TIME_LIMIT("solution.result.timeLimit"),
+
+		MEMORY_LIMIT("solution.result.memoryLimit"),
+
+		OUTPUT_LIMIT("solution.result.outputLimit"),
+
+		RUNTIME_ERROR("solution.result.runtimeErorr"),
+
+		INTERNAL_ERROR("solution.result.internalError"),
+
+		SECURITY_VIOLATION("solution.result.securityViolation"),
+
+		COMPILE_ERROR("solution.result.compileError"),
+
+		PRESENTATION_ERROR("solution.result.presentationError"),
+
+		WRONG_ANSWER("solution.result.wrongAnswer"),
+
+		WAITING("solution.result.waiting");
+
+		private String translationKey;
+
+		private Result(final String translationKey) {
+			this.translationKey = translationKey;
+		}
+
+		@Override
+		public String toString() {
+			return this.translationKey;
+		}
+	}
+
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -1021785296863034669L;;
 
 	private final Result result;
 

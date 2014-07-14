@@ -22,13 +22,18 @@
  */
 package org.ng200.openolympus.cerberus;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-public interface SolutionJudgeFactory {
+import org.ng200.openolympus.SharedTemporaryStorageFactory;
 
-	public SolutionJudge createChain(Properties properties);
+public interface SolutionJudgeFactory extends Serializable {
+
+	public SolutionJudge createJudge(Properties properties,
+			SharedTemporaryStorageFactory storageFactory);
 
 	public BigDecimal getMaximumScoreForTest(String testPath,
 			Properties properties);
+
 }

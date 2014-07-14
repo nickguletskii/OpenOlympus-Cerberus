@@ -22,67 +22,86 @@
  */
 package org.ng200.openolympus.cerberus.util;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.ng200.openolympus.FileAccess;
+import org.ng200.openolympus.cerberus.Janitor;
+import org.ng200.openolympus.cerberus.SolutionJudge;
 
-public class TemporaryStorage implements Closeable {
-	private final Path directory;
+public class TemporaryStorage implements AutoCloseable {
+
+	public static void cleanUp(final SolutionJudge judge) {
+		TemporaryStorage.storages.computeIfAbsent(judge,
+				(key) -> new ArrayList<>()).forEach(
+						(storage) -> {
+							try {
+								storage.close();
+							} catch (final Exception e) {
+								throw new RuntimeException(
+										"Couldn't clean up temporary storage: ", e);
+							}
+						});
+		TemporaryStorage.storages.remove(judge);
+	}
+
+	private static void register(final SolutionJudge holder,
+			final TemporaryStorage temporaryStorage) {
+		TemporaryStorage.storages.computeIfAbsent(holder,
+				(key) -> new ArrayList<>()).add(temporaryStorage);
+	}
+
+	static {
+		Janitor.registerCleanupStep((judge) -> TemporaryStorage.cleanUp(judge));
+	}
+
+	private final File directory;
+
+	private boolean closed;
+
 	private static final Path RAMDISK_ROOT = FileSystems.getDefault().getPath(
 			"/tmp/ramdisk");
 
-	public TemporaryStorage() throws IOException {
+	private static ConcurrentMap<SolutionJudge, List<TemporaryStorage>> storages = new ConcurrentHashMap<>();
+
+	public TemporaryStorage(final SolutionJudge holder) throws IOException {
+		TemporaryStorage.register(holder, this);
 		if (Files.exists(TemporaryStorage.RAMDISK_ROOT)) {
 			this.directory = Files.createTempDirectory(
-					TemporaryStorage.RAMDISK_ROOT, "cerberus");
+					TemporaryStorage.RAMDISK_ROOT, "cerberus").toFile();
 		} else {
-			this.directory = FileAccess.createTempDirectory("cerberus");
+			this.directory = FileAccess.createTempDirectory("cerberus")
+					.toFile();
+		}
+	}
+
+	private void assertNotClosed() {
+		if (this.closed) {
+			throw new IllegalStateException(
+					"Temporary storage is already closed.");
 		}
 	}
 
 	@Override
-	public void close() throws IOException {
-		FileAccess.walkFileTree(this.directory, new SimpleFileVisitor<Path>() {
-			@Override
-			public FileVisitResult postVisitDirectory(final Path dir,
-					final IOException e) throws IOException {
-				if (e == null) {
-					FileAccess.delete(dir);
-					return FileVisitResult.CONTINUE;
-				} else {
-					throw e;
-				}
-			}
-
-			@Override
-			public FileVisitResult visitFile(final Path file,
-					final BasicFileAttributes attrs) throws IOException {
-				FileAccess.delete(file);
-				return FileVisitResult.CONTINUE;
-			}
-
-			@Override
-			public FileVisitResult visitFileFailed(final Path file,
-					final IOException e) throws IOException {
-				FileAccess.delete(file);
-				return FileVisitResult.CONTINUE;
-			}
-		});
+	public synchronized void close() throws IOException {
+		FileAccess.deleteDirectoryByWalking(this.directory);
+		this.closed = true;
 	}
 
-	public File getDirectory() {
-		return this.directory.toFile();
-	}
-
-	public Path getPath() {
+	public synchronized File getDirectory() {
+		this.assertNotClosed();
 		return this.directory;
+	}
+
+	public synchronized Path getPath() {
+		this.assertNotClosed();
+		return this.directory.toPath();
 	}
 }

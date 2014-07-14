@@ -23,22 +23,32 @@
 package org.ng200.openolympus.cerberus;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-public interface SolutionJudge {
+public abstract class SolutionJudge implements Serializable {
 
-	public void close() throws IOException;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -2634100282330478183L;
 
-	public void compile(List<File> sources);
+	public SolutionJudge() {
+	}
 
-	public Collection<String> getOutputFiles();
+	public abstract void closeLocal() throws Exception;
 
-	public boolean isCompiled();
+	public abstract void closeShared() throws Exception;
 
-	public SolutionResult run(List<File> testFiles, boolean checkAnswer,
-			BigDecimal maximumSCore, Properties properties);
+	public abstract void compile(List<File> sources);
+
+	public abstract Collection<String> getOutputFiles();
+
+	public abstract boolean isCompiled();
+
+	public abstract SolutionResult run(List<File> testFiles,
+			boolean checkAnswer, BigDecimal maximumSCore, Properties properties);
 }

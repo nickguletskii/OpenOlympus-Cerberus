@@ -22,6 +22,7 @@
  */
 package org.ng200.openolympus.cerberus;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,10 +33,7 @@ import org.ng200.openolympus.cerberus.util.Exceptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SolutionResultBuilder {
-	private static final Logger logger = LoggerFactory
-			.getLogger(SolutionResultBuilder.class);
-
+public class SolutionResultBuilder implements Serializable {
 	public static SolutionResultBuilder copyOf(
 			final SolutionResultBuilder builder) {
 		final SolutionResultBuilder result = new SolutionResultBuilder();
@@ -53,6 +51,14 @@ public class SolutionResultBuilder {
 
 		return result;
 	}
+
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 78123193148217137L;
+
+	private static final Logger logger = LoggerFactory
+			.getLogger(SolutionResultBuilder.class);
 
 	private long timeUsed = -1;
 	private long cpuTime = -1;
@@ -130,6 +136,7 @@ public class SolutionResultBuilder {
 				return this;
 			}
 		} catch (final Exception e) {
+			e.printStackTrace();
 			SolutionResultBuilder.logger.error("Internal error: {}", e);
 			this.setStatus(SolutionResult.Result.INTERNAL_ERROR);
 			this.fail(SolutionCheckingStage.COMPILATION, Exceptions.toString(e));

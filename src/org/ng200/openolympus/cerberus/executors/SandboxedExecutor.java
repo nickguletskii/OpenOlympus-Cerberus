@@ -37,6 +37,7 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.ng200.openolympus.FileAccess;
 import org.ng200.openolympus.cerberus.ExecutionResult;
+import org.ng200.openolympus.cerberus.SolutionJudge;
 import org.ng200.openolympus.cerberus.util.TemporaryStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,11 +57,11 @@ public class SandboxedExecutor extends OlrunnerExecutor implements Executor {
 	private static final Logger logger = LoggerFactory
 			.getLogger(SandboxedExecutor.class);
 
-	public SandboxedExecutor() throws IOException {
-		this.storage = new TemporaryStorage();
+	public SandboxedExecutor(final SolutionJudge holder) throws IOException {
+		this.storage = new TemporaryStorage(holder);
 		SandboxedExecutor.logger.info("Chroot template path: {}",
 				SandboxedExecutor.CHROOT_TEMPLATE_PATH.toAbsolutePath()
-				.toString());
+						.toString());
 		FileAccess.rsync(SandboxedExecutor.CHROOT_TEMPLATE_PATH.toFile(),
 				this.storage.getPath().toFile());
 	}
@@ -159,7 +160,7 @@ public class SandboxedExecutor extends OlrunnerExecutor implements Executor {
 		SandboxedExecutor.logger.info("Providing file {}", file);
 		FileAccess.copy(file,
 				this.storage.getPath().resolve("chroot")
-				.resolve(file.getName()));
+						.resolve(file.getName()));
 	}
 
 	@Override

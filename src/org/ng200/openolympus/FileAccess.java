@@ -28,9 +28,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.CopyOption;
+import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileAttribute;
 import java.util.stream.Stream;
 
@@ -62,17 +65,75 @@ public class FileAccess {
 		return Files.copy(source, target, copyOptions);
 	}
 
+	public static void copyDirectory(final File from, final File to)
+			throws IOException {
+		FileUtils.copyDirectory(from, to);
+	}
+
+	public static void createDirectories(final Path dir,
+			final FileAttribute<?>... attrs) throws IOException {
+		Files.createDirectories(dir, attrs);
+	}
+
+	public static void createFile(final Path file,
+			final FileAttribute<?>... attrs) throws IOException {
+		Files.createFile(file, attrs);
+	}
+
 	public static Path createTempDirectory(final String string,
 			final FileAttribute<?>... attrs) throws IOException {
 		return Files.createTempDirectory(string, attrs);
+	}
+
+	public static void delete(final File file) throws IOException {
+		FileAccess.delete(file.toPath());
 	}
 
 	public static void delete(final Path path) throws IOException {
 		Files.delete(path);
 	}
 
-	public static void delete(final File file) throws IOException {
-		delete(file.toPath());
+	public static void deleteDirectory(final File dir) throws IOException {
+		FileUtils.deleteDirectory(dir);
+	}
+
+	public static void deleteDirectoryByWalking(final File directory)
+			throws IOException {
+		FileAccess.deleteDirectoryByWalking(directory.toPath());
+	}
+
+	public static void deleteDirectoryByWalking(final Path path)
+			throws IOException {
+		if (!Files.exists(path)) {
+			return;
+		}
+		FileAccess.walkFileTree(path, new SimpleFileVisitor<Path>() {
+			@Override
+			public FileVisitResult postVisitDirectory(final Path dir,
+					final IOException e) throws IOException {
+				if (e == null) {
+					FileAccess.delete(dir);
+					return FileVisitResult.CONTINUE;
+				} else {
+					throw e;
+				}
+			}
+
+			@Override
+			public FileVisitResult visitFile(final Path file,
+					final BasicFileAttributes attrs) throws IOException {
+				FileAccess.delete(file);
+				return FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult visitFileFailed(final Path file,
+					final IOException e) throws IOException {
+				FileAccess.delete(file);
+				return FileVisitResult.CONTINUE;
+			}
+		});
+		Files.deleteIfExists(path);
 	}
 
 	public static boolean isExecutable(final File file) {
@@ -117,7 +178,9 @@ public class FileAccess {
 			public void write(final int b) throws IOException {
 			}
 		}));
-		executor.setExitValues(new int[] { 0 });
+		executor.setExitValues(new int[] {
+		                                  0
+		});
 		try {
 			executor.execute(commandLine);
 		} catch (final ExecuteException e) {
@@ -146,23 +209,9 @@ public class FileAccess {
 		return Files.walk(base);
 	}
 
-	public static void writeString(String str, File descriptionFile)
+	public static void writeString(final String str, final File descriptionFile)
 			throws IOException {
 		Files.write(descriptionFile.toPath(),
 				str.getBytes(Charset.forName("UTF-8")));
-	}
-
-	public static void createDirectories(Path dir, FileAttribute<?>... attrs)
-			throws IOException {
-		Files.createDirectories(dir, attrs);
-	}
-
-	public static void createFile(Path file, FileAttribute<?>... attrs)
-			throws IOException {
-		Files.createFile(file, attrs);
-	}
-
-	public static void deleteDirectory(File dir) throws IOException {
-		FileUtils.deleteDirectory(dir);
 	}
 }

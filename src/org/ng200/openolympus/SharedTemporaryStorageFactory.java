@@ -20,19 +20,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.ng200.openolympus.cerberus;
+package org.ng200.openolympus;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Path;
 
-public abstract class AnswerCheckResult implements Serializable {
-	public static enum CheckingResultType {
-		OK, PRESENTATION_ERROR, WRONG_ANSWER
-	}
-
+public class SharedTemporaryStorageFactory implements Serializable {
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 7788554909663401190L;
+	private static final long serialVersionUID = 4888020413912755534L;
+	private File storagePath;
 
-	public abstract CheckingResultType getCheckingResultType();
+	public SharedTemporaryStorageFactory() {
+		// Serialization constructor
+	}
+
+	public SharedTemporaryStorageFactory(final Path storagePath) {
+		this.storagePath = storagePath.toFile();
+	}
+
+	public SharedTemporaryStorage createSharedTemporaryStorage()
+			throws IOException {
+		return new SharedTemporaryStorage(this.storagePath.toPath());
+	}
 }

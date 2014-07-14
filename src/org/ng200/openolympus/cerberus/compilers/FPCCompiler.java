@@ -74,7 +74,10 @@ public class FPCCompiler implements Compiler {
 				commandLine.toString());
 
 		final DefaultExecutor executor = new DefaultExecutor();
-		executor.setExitValues(new int[] { 0, 1 });
+		executor.setExitValues(new int[] {
+		                                  0,
+		                                  1
+		});
 
 		final ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
 		executor.setStreamHandler(new PumpStreamHandler(errorStream, null, null));

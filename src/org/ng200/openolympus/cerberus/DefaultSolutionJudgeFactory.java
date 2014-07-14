@@ -24,27 +24,26 @@ package org.ng200.openolympus.cerberus;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.charset.Charset;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.ng200.openolympus.SharedTemporaryStorageFactory;
 
 public class DefaultSolutionJudgeFactory implements SolutionJudgeFactory {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(DefaultSolutionJudgeFactory.class);
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -4480926810325700795L;
 
 	@Override
-	public SolutionJudge createChain(final Properties properties) {
+	public SolutionJudge createJudge(final Properties properties,
+			final SharedTemporaryStorageFactory sharedTemporaryStorageFactory) {
 		try {
 			return new DefaultSolutionJudge("input.txt", "output.txt",
 					Boolean.valueOf(properties.getProperty("consoleIO")),
-					Charset.forName("US-ASCII"));
+					"US-ASCII", sharedTemporaryStorageFactory);
 		} catch (final IOException e) {
-			DefaultSolutionJudgeFactory.logger.error(
-					"Couldn't create solution judge: {}", e);
-			return null;
+			throw new RuntimeException("Couldn't create solution judge: ", e);
 		}
 	}
 

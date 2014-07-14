@@ -22,17 +22,21 @@
  */
 package org.ng200.openolympus.cerberus;
 
-import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Consumer;
 
-public abstract class AnswerCheckResult implements Serializable {
-	public static enum CheckingResultType {
-		OK, PRESENTATION_ERROR, WRONG_ANSWER
+public class Janitor {
+	public static void cleanUp(final SolutionJudge judge) {
+		Janitor.cleanupSteps.forEach((step) -> step.accept(judge));
 	}
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 7788554909663401190L;
+	public static void registerCleanupStep(
+			final Consumer<SolutionJudge> cleanupStep) {
+		Janitor.cleanupSteps.add(cleanupStep);
+	}
 
-	public abstract CheckingResultType getCheckingResultType();
+	private static List<Consumer<SolutionJudge>> cleanupSteps = Collections
+			.synchronizedList(new ArrayList<Consumer<SolutionJudge>>());
 }

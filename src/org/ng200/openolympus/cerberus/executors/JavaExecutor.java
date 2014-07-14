@@ -40,6 +40,7 @@ import org.apache.commons.io.FileUtils;
 import org.ng200.openolympus.FileAccess;
 import org.ng200.openolympus.cerberus.ExecutionResult;
 import org.ng200.openolympus.cerberus.ExecutionResult.ExecutionResultType;
+import org.ng200.openolympus.cerberus.SolutionJudge;
 import org.ng200.openolympus.cerberus.util.TemporaryStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,9 +61,10 @@ public class JavaExecutor extends OlrunnerExecutor implements Executor {
 	private final List<String> writeFiles;
 	private final List<String> readFiles = new ArrayList<String>();
 
-	public JavaExecutor(final List<String> writeFiles) throws IOException {
+	public JavaExecutor(final SolutionJudge holder,
+			final List<String> writeFiles) throws IOException {
 		this.writeFiles = writeFiles;
-		this.storage = new TemporaryStorage();
+		this.storage = new TemporaryStorage(holder);
 		this.storage.getPath().resolve("chroot").toFile().mkdirs();
 	}
 

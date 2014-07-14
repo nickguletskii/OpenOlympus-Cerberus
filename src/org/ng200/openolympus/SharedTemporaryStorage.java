@@ -20,19 +20,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.ng200.openolympus.cerberus;
+package org.ng200.openolympus;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-public abstract class AnswerCheckResult implements Serializable {
-	public static enum CheckingResultType {
-		OK, PRESENTATION_ERROR, WRONG_ANSWER
-	}
+public class SharedTemporaryStorage implements AutoCloseable, Serializable {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 7788554909663401190L;
+	private static final long serialVersionUID = -1569837982555606657L;
+	private final File directory;
 
-	public abstract CheckingResultType getCheckingResultType();
+	public SharedTemporaryStorage(final Path storagePath) throws IOException {
+		final Path temporaryStoragePath = storagePath.resolve("tmp");
+		FileAccess.createDirectories(temporaryStoragePath);
+		this.directory = Files.createTempDirectory(temporaryStoragePath,
+				"cerberus").toFile();
+	}
+
+	@Override
+	public void close() throws IOException {
+		FileAccess.deleteDirectoryByWalking(this.directory);
+	}
+
+	public File getDirectory() {
+		return this.directory;
+	}
+
+	public Path getPath() {
+		return this.directory.toPath();
+	}
 }
