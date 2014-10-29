@@ -41,6 +41,9 @@ public class SharedTemporaryStorage implements AutoCloseable, Serializable {
 		FileAccess.createDirectories(temporaryStoragePath);
 		this.directory = Files.createTempDirectory(temporaryStoragePath,
 				"cerberus").toFile();
+		FileAccess.createDirectories(directory.toPath());
+		if (!directory.exists())
+			throw new IOException("Couldn't create temporary shared directory!");
 	}
 
 	@Override

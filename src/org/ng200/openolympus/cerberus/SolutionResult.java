@@ -36,7 +36,7 @@ public class SolutionResult implements Serializable {
 
 		OUTPUT_LIMIT("solution.result.outputLimit"),
 
-		RUNTIME_ERROR("solution.result.runtimeErorr"),
+		RUNTIME_ERROR("solution.result.runtimeError"),
 
 		INTERNAL_ERROR("solution.result.internalError"),
 

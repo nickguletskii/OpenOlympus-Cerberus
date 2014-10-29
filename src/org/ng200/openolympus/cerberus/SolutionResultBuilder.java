@@ -224,11 +224,8 @@ public class SolutionResultBuilder implements Serializable {
 				this.fail(SolutionCheckingStage.RUNTIME, "#errors.timeLimit");
 				return this;
 			}
-		} catch (final Exception e) {
-			SolutionResultBuilder.logger.error("Internal error: {}", e);
-			this.setStatus(SolutionResult.Result.INTERNAL_ERROR);
-			this.fail(SolutionCheckingStage.RUNTIME, Exceptions.toString(e));
-			return this;
+		} catch (final Throwable t) {
+			throw new RuntimeException(t);
 		}
 		return this;
 	}
@@ -255,11 +252,8 @@ public class SolutionResultBuilder implements Serializable {
 			}
 		} catch (final CompilerError e) {
 			this.fail(stage, e.getErrors());
-		} catch (final Exception e) {
-			SolutionResultBuilder.logger.error("Internal error: {}", e);
-			this.fail(stage, Exceptions.toString(e));
-			SolutionResultBuilder.logger.error(
-					"Error while executing stage {}: {}", stage.name(), e);
+		} catch (final Throwable t) {
+			throw new RuntimeException(t);
 		}
 		return this;
 	}

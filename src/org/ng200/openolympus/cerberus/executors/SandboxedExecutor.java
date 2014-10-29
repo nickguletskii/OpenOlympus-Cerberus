@@ -76,6 +76,7 @@ public class SandboxedExecutor extends OlrunnerExecutor implements Executor {
 		SandboxedExecutor.logger.info("Copying program into jail");
 		final Path chrootedProgram = this.storage.getPath().resolve("chroot")
 				.resolve(program.getName());
+		chrootedProgram.getParent().toFile().mkdirs();
 		FileAccess.copy(program, chrootedProgram,
 				StandardCopyOption.COPY_ATTRIBUTES);
 

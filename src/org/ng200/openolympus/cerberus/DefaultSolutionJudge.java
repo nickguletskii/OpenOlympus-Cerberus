@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
-import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +48,6 @@ import org.ng200.openolympus.cerberus.exceptions.CompilerError;
 import org.ng200.openolympus.cerberus.executors.JavaExecutor;
 import org.ng200.openolympus.cerberus.executors.OlrunnerExecutor;
 import org.ng200.openolympus.cerberus.executors.SandboxedExecutor;
-import org.ng200.openolympus.cerberus.util.Exceptions;
 import org.ng200.openolympus.cerberus.util.Lists;
 import org.ng200.openolympus.cerberus.util.TemporaryStorage;
 import org.ng200.openolympus.cerberus.verifiers.FileExistsVerifier;
@@ -86,13 +84,13 @@ public class DefaultSolutionJudge extends SolutionJudge {
 			final String outputFileName, final boolean consoleInput,
 			final String charset,
 			final SharedTemporaryStorageFactory storageFactory)
-					throws IOException {
+			throws IOException {
 		this.inputFileName = inputFileName;
 		this.outputFileName = outputFileName;
 		this.consoleInput = consoleInput;
 		this.charset = charset;
 		this.sharedStorage = storageFactory.createSharedTemporaryStorage();
-		this.program = new File(this.getStorage().getDirectory(), "program");
+		this.program = new File(this.sharedStorage.getDirectory(), "program");
 	}
 
 	private void checkAnswer(final SolutionResultBuilder resultBuilder,
@@ -101,15 +99,15 @@ public class DefaultSolutionJudge extends SolutionJudge {
 		resultBuilder.checkingStage(
 				() -> {
 					return new WhitespaceTokenizedVerifier(outputFile)
-					.isAnswerCorrect(bytes,
-							Charset.forName(this.charset));
+							.isAnswerCorrect(bytes,
+									Charset.forName(this.charset));
 				}).checkingStage(
-						() -> {
-							resultBuilder.setScore(maximumScore);
-							return new VerifierResult(
-									AnswerCheckResult.CheckingResultType.OK,
-									"Successful judgement.");
-						});
+				() -> {
+					resultBuilder.setScore(maximumScore);
+					return new VerifierResult(
+							AnswerCheckResult.CheckingResultType.OK,
+							"Successful judgement.");
+				});
 	}
 
 	private void checkAnswerFile(final SolutionResultBuilder resultBuilder,
@@ -135,10 +133,6 @@ public class DefaultSolutionJudge extends SolutionJudge {
 		try {
 			compiler.compile(Lists.from(sourceFile), this.program,
 					new HashMap<String, Object>());
-			final File destination = new File(
-					this.sharedStorage.getDirectory(), "program");
-			FileAccess.copyDirectory(this.program, destination);
-			this.program = destination;
 
 			result = new CompilerResult(CompilerResult.CompileResultType.OK);
 
@@ -154,34 +148,44 @@ public class DefaultSolutionJudge extends SolutionJudge {
 	public void compile(final List<File> sources) {
 		synchronized (this.compiled) {
 			this.baseResultBuilder
-			.compileStage(() -> {
-				if (sources.size() != 1) {
-					throw new IllegalArgumentException(
-							"DefaultSolutionJudge only supports one source file!");
-				}
-				File sourceFile = sources.get(0);
-				sourceFile = FileAccess.copy(
-						sourceFile,
-						this.getStorage().getPath()
-						.resolve(sourceFile.getName()),
-						StandardCopyOption.REPLACE_EXISTING).toFile();
+					.compileStage(() -> {
+						if (sources.size() != 1) {
+							throw new IllegalArgumentException(
+									"DefaultSolutionJudge only supports one source file!");
+						}
+						File sourceFile = sources.get(0);
 
-				if (sourceFile.getName().endsWith(".cpp")) {
-					this.programLanguage = ProgramLanguage.CPP;
-					return this.compileCpp(sourceFile);
-				} else if (sourceFile.getName().endsWith(".pas")) {
-					this.programLanguage = ProgramLanguage.FPC;
-					return this.compileFpc(sourceFile);
-				} else if (sourceFile.getName().endsWith(".java")) {
-					this.programLanguage = ProgramLanguage.JAVA;
-					return this.compileJava(sourceFile);
-				} else {
-					return new CompilerResult(
-							CompilerResult.CompileResultType.COMPILE_ERROR,
-							new CompilerError("Unknown file type",
-									"Please check the file type."));
-				}
-			});
+						if (sourceFile.getName().endsWith(".cpp")) {
+							File temporaryCopy = sharedStorage.getPath()
+									.resolve("main.cpp").toFile();
+
+							FileAccess.copy(sources.get(0), temporaryCopy);
+
+							this.programLanguage = ProgramLanguage.CPP;
+							return this.compileCpp(temporaryCopy);
+						} else if (sourceFile.getName().endsWith(".pas")) {
+							File temporaryCopy = sharedStorage.getPath()
+									.resolve("main.pas").toFile();
+
+							FileAccess.copy(sources.get(0), temporaryCopy);
+
+							this.programLanguage = ProgramLanguage.FPC;
+							return this.compileFpc(temporaryCopy);
+						} else if (sourceFile.getName().endsWith(".java")) {
+							File temporaryCopy = sharedStorage.getPath()
+									.resolve("Main.java").toFile();
+
+							FileAccess.copy(sources.get(0), temporaryCopy);
+
+							this.programLanguage = ProgramLanguage.JAVA;
+							return this.compileJava(temporaryCopy);
+						} else {
+							return new CompilerResult(
+									CompilerResult.CompileResultType.COMPILE_ERROR,
+									new CompilerError("Unknown file type",
+											"Please check the file type."));
+						}
+					});
 		}
 	}
 
@@ -236,15 +240,15 @@ public class DefaultSolutionJudge extends SolutionJudge {
 						.setTimeLimit(
 								Long.valueOf(properties
 										.getProperty("realTimeLimit")))
-										.setMemoryLimit(
-												Long.valueOf(properties
-														.getProperty("memoryLimit")))
-														.setDiskLimit(
-																Long.valueOf(properties
-																		.getProperty("diskLimit")));
+						.setMemoryLimit(
+								Long.valueOf(properties
+										.getProperty("memoryLimit")))
+						.setDiskLimit(
+								Long.valueOf(properties
+										.getProperty("diskLimit")));
 
 				executor.setOutputStream(out).setErrorStream(err)
-				.setInputStream(in);
+						.setInputStream(in);
 				return executor.execute(this.program);
 			});
 			if (checkAnswer) {
@@ -252,11 +256,8 @@ public class DefaultSolutionJudge extends SolutionJudge {
 						maximumScore);
 			}
 		} catch (final IOException e) {
-			DefaultSolutionJudge.logger.error(
-					"Could not start sandboxed executor: {}", e);
-			resultBuilder.fail(SolutionCheckingStage.RUNTIME,
-					Exceptions.toString(e));
-			return;
+			throw new RuntimeException(
+					"Couldn't execute and check user's solution: ", e);
 		}
 
 	}
@@ -288,46 +289,43 @@ public class DefaultSolutionJudge extends SolutionJudge {
 						.setTimeLimit(
 								Long.valueOf(properties
 										.getProperty("realTimeLimit")))
-										.setMemoryLimit(
-												Long.valueOf(properties
-														.getProperty("memoryLimit")))
-														.setDiskLimit(
-																Long.valueOf(properties
-																		.getProperty("diskLimit")));
+						.setMemoryLimit(
+								Long.valueOf(properties
+										.getProperty("memoryLimit")))
+						.setDiskLimit(
+								Long.valueOf(properties
+										.getProperty("diskLimit")));
 
 				executor.setOutputStream(null).setErrorStream(null)
-				.setInputStream(null);
+						.setInputStream(null);
 
 				executor.provideFile(testFiles
 						.stream()
 						.filter((file) -> file.getName().equals(
 								this.inputFileName))
-								.findAny()
-								.orElseThrow(
-										() -> new IllegalArgumentException(
-												"Input file is not supplied")));
+						.findAny()
+						.orElseThrow(
+								() -> new IllegalArgumentException(
+										"Input file is not supplied")));
 				final ExecutionResult result = executor.execute(this.program);
 				return result;
 			});
 
 			resultBuilder
-			.checkingStage(
-					() -> FileExistsVerifier
-					.noFileNotFoundException(() -> executor
-							.getFile(this.outputFileName,
-									userOutputFile)))
-									.checkingStage(
-											() -> FileExistsVerifier.fileExists(userOutputFile));
+					.checkingStage(
+							() -> FileExistsVerifier
+									.noFileNotFoundException(() -> executor
+											.getFile(this.outputFileName,
+													userOutputFile)))
+					.checkingStage(
+							() -> FileExistsVerifier.fileExists(userOutputFile));
 			if (checkAnswer) {
 				this.checkAnswerFile(resultBuilder, maximumScore, outputFile,
 						userOutputFile);
 			}
 		} catch (final IOException e) {
-			DefaultSolutionJudge.logger.error(
-					"Could not start sandboxed executor: {}", e);
-			resultBuilder.fail(SolutionCheckingStage.RUNTIME,
-					Exceptions.toString(e));
-			return;
+			throw new RuntimeException(
+					"Couldn't execute and check user's solution: ", e);
 		}
 	}
 

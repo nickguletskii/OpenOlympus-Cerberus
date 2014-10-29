@@ -41,6 +41,7 @@ public abstract class OlrunnerExecutor implements Executor {
 	protected ExecutionResult readOlrunnerVerdict(final File verdictFile)
 			throws IOException, IllegalStateException, NumberFormatException {
 		final String text = FileUtils.readFileToString(verdictFile).trim();
+		
 		/*
 		 * Capture one of the following: $1 $1($2) $1($2,$3,$4)
 		 */
@@ -64,7 +65,7 @@ public abstract class OlrunnerExecutor implements Executor {
 		case "ABNORMAL_TERMINATION":
 			return new ExecutionResult(
 					ExecutionResult.ExecutionResultType
-					.valueOf(resultTypeString),
+							.valueOf(resultTypeString),
 					Long.valueOf(matcher.group(2)), Long.valueOf(matcher
 							.group(3)), Long.valueOf(matcher.group(4)), -1);
 		case "SECURITY_VIOLATION":
@@ -74,7 +75,7 @@ public abstract class OlrunnerExecutor implements Executor {
 		default:
 			return new ExecutionResult(
 					ExecutionResult.ExecutionResultType
-					.valueOf(resultTypeString),
+							.valueOf(resultTypeString),
 					-1, -1, -1, -1);
 		}
 	}
