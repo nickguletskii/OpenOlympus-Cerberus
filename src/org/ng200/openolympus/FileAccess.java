@@ -1,6 +1,6 @@
 /**
  * The MIT License
- * Copyright (c) 2014 Nick Guletskii
+ * Copyright (c) 2014-2015 Nick Guletskii
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,6 @@ package org.ng200.openolympus;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.CopyOption;
 import java.nio.file.FileVisitResult;
@@ -43,6 +42,7 @@ import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
 public class FileAccess {
 	public static Path copy(final File source, final File target,
@@ -173,18 +173,15 @@ public class FileAccess {
 		executor.setWatchdog(new ExecuteWatchdog(20000)); // 20 seconds for the
 		// sandbox to
 		// complete
-		executor.setStreamHandler(new PumpStreamHandler(new OutputStream() {
-			@Override
-			public void write(final int b) throws IOException {
-			}
-		}));
+		ByteArrayOutputStream outAndErr = new ByteArrayOutputStream();
+		executor.setStreamHandler(new PumpStreamHandler(outAndErr));
 		executor.setExitValues(new int[] {
-		                                  0
+			0
 		});
 		try {
 			executor.execute(commandLine);
 		} catch (final ExecuteException e) {
-			throw new IOException("Rsync failed", e);
+			throw new IOException("Rsync failed:\n" + outAndErr.toString(), e);
 		}
 	}
 

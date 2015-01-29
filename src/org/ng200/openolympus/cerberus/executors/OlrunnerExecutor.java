@@ -1,6 +1,6 @@
 /**
  * The MIT License
- * Copyright (c) 2014 Nick Guletskii
+ * Copyright (c) 2014-2015 Nick Guletskii
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.exec.CommandLine;
-import org.apache.commons.io.FileUtils;
+import org.ng200.openolympus.FileAccess;
 import org.ng200.openolympus.cerberus.ExecutionResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class OlrunnerExecutor implements Executor {
+
 
 	public OlrunnerExecutor() {
 		super();
@@ -40,8 +43,9 @@ public abstract class OlrunnerExecutor implements Executor {
 
 	protected ExecutionResult readOlrunnerVerdict(final File verdictFile)
 			throws IOException, IllegalStateException, NumberFormatException {
-		final String text = FileUtils.readFileToString(verdictFile).trim();
-		
+		final String text = new String(FileAccess.readAllBytes(verdictFile))
+				.trim();
+
 		/*
 		 * Capture one of the following: $1 $1($2) $1($2,$3,$4)
 		 */
@@ -52,7 +56,8 @@ public abstract class OlrunnerExecutor implements Executor {
 		final Matcher matcher = pattern.matcher(text);
 		if (!matcher.matches()) {
 			throw new IllegalStateException(
-					"The verdict file doesn't contain a vaildly formatted string!");
+					"The verdict file doesn't contain a vaildly formatted string! Got this: \""
+							+ text + "\"");
 		}
 		final String resultTypeString = matcher.group(1);
 
@@ -62,16 +67,14 @@ public abstract class OlrunnerExecutor implements Executor {
 		case "OUTPUT_LIMIT":
 		case "TIME_LIMIT":
 		case "RUNTIME_ERROR":
+		case "INTERNAL_ERROR":
 		case "ABNORMAL_TERMINATION":
+		case "SECURITY_VIOLATION":
 			return new ExecutionResult(
 					ExecutionResult.ExecutionResultType
 							.valueOf(resultTypeString),
-					Long.valueOf(matcher.group(2)), Long.valueOf(matcher
-							.group(3)), Long.valueOf(matcher.group(4)), -1);
-		case "SECURITY_VIOLATION":
-			return new ExecutionResult(
-					ExecutionResult.ExecutionResultType.SECURITY_VIOLATION, -1,
-					-1, -1, Long.valueOf(matcher.group(2)));
+					Long.valueOf(matcher.group(3)), Long.valueOf(matcher
+							.group(2)), Long.valueOf(matcher.group(4)), -1);
 		default:
 			return new ExecutionResult(
 					ExecutionResult.ExecutionResultType
@@ -85,13 +88,16 @@ public abstract class OlrunnerExecutor implements Executor {
 				Long.toString(this.getMemoryLimit())));
 
 		commandLine.addArgument(MessageFormat.format("--cpulimit={0}",
-				Long.toString(this.getCpuLimit())));
+				Long.toString(1_000l * this.getCpuLimit())));
 
 		commandLine.addArgument(MessageFormat.format("--timelimit={0}",
 				Long.toString(this.getTimeLimit())));
 
 		commandLine.addArgument(MessageFormat.format("--disklimit={0}",
 				Long.toString(this.getDiskLimit())));
+
+		commandLine.addArgument("--gid=0");
+		commandLine.addArgument("--uid=0");
 	}
 
 }

@@ -1,6 +1,6 @@
 /**
  * The MIT License
- * Copyright (c) 2014 Nick Guletskii
+ * Copyright (c) 2014-2015 Nick Guletskii
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -65,8 +65,6 @@ public class DefaultSolutionJudge extends SolutionJudge {
 	 */
 	private static final long serialVersionUID = -6077008331283504808L;
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(DefaultSolutionJudge.class);
 	private transient TemporaryStorage storage;
 	private final SharedTemporaryStorage sharedStorage;
 	private final String inputFileName;

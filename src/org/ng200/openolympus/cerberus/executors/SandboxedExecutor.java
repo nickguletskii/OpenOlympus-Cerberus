@@ -1,6 +1,6 @@
 /**
  * The MIT License
- * Copyright (c) 2014 Nick Guletskii
+ * Copyright (c) 2014-2015 Nick Guletskii
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,7 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.ng200.openolympus.FileAccess;
 import org.ng200.openolympus.cerberus.ExecutionResult;
 import org.ng200.openolympus.cerberus.SolutionJudge;
@@ -81,7 +82,7 @@ public class SandboxedExecutor extends OlrunnerExecutor implements Executor {
 				StandardCopyOption.COPY_ATTRIBUTES);
 
 		final CommandLine commandLine = new CommandLine("sudo");
-		commandLine.addArgument("olrunner");
+		commandLine.addArgument("olympus_watchdog");
 
 		this.setUpOlrunnerLimits(commandLine);
 
@@ -89,18 +90,22 @@ public class SandboxedExecutor extends OlrunnerExecutor implements Executor {
 				.getPath().resolve("chroot").toAbsolutePath().toString()));
 
 		commandLine.addArgument("--");
-		commandLine.addArgument(chrootedProgram.toAbsolutePath().toString());
+		commandLine.addArgument("/"
+				+ this.storage.getPath().resolve("chroot")
+						.relativize(chrootedProgram).toString());
 
 		final DefaultExecutor executor = new DefaultExecutor();
 
-		executor.setWatchdog(new ExecuteWatchdog(20000)); // 20 seconds for the
+		executor.setExitValue(0);
+
+		executor.setWatchdog(new ExecuteWatchdog(60000)); // 60 seconds for the
 		// sandbox to
 		// complete
 
 		executor.setWorkingDirectory(this.storage.getDirectory());
 
-		executor.setStreamHandler(new PumpStreamHandler(this.outputStream,
-				this.errorStream, this.inputStream));
+		executor.setStreamHandler(new PumpStreamHandler(outputStream,
+				errorStream, this.inputStream));
 
 		try {
 			executor.execute(commandLine);
