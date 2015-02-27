@@ -43,7 +43,7 @@ public class TestDefaultSolutionJudge {
 		try (TemporaryStorage storage = new TemporaryStorage(judge);) {
 
 			final Path testSrc = storage.getPath().resolve(filename);
-			FileAccess.writeUTFStringToFile(testSrc, contents);
+			FileAccess.writeUTF8StringToFile(testSrc, contents);
 
 			TestDefaultSolutionJudge.logger
 					.info("Telling judge to compile a test solution");
@@ -74,7 +74,7 @@ public class TestDefaultSolutionJudge {
 		try (TemporaryStorage storage = new TemporaryStorage(judge);) {
 
 			final Path testSrc = storage.getPath().resolve(fileName);
-			FileAccess.writeUTFStringToFile(testSrc, "foo");
+			FileAccess.writeUTF8StringToFile(testSrc, "foo");
 
 			TestDefaultSolutionJudge.logger
 					.info("Telling judge to compile a test solution");
@@ -153,8 +153,8 @@ public class TestDefaultSolutionJudge {
 			Result expectedResult) throws IOException {
 		final Path input = storage.getPath().resolve("input.txt");
 		final Path output = storage.getPath().resolve("output.txt");
-		FileAccess.writeUTFStringToFile(input, inputString);
-		FileAccess.writeUTFStringToFile(output, outputString);
+		FileAccess.writeUTF8StringToFile(input, inputString);
+		FileAccess.writeUTF8StringToFile(output, outputString);
 
 		TestDefaultSolutionJudge.logger.info(
 				"Telling judge to run a test solution, expected result {}",

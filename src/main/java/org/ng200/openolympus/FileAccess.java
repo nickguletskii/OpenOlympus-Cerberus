@@ -208,7 +208,7 @@ public class FileAccess {
 		return Files.walk(base);
 	}
 
-	public static void writeUTFStringToFile(Path file, String string,
+	public static void writeUTF8StringToFile(Path file, String string,
 			OpenOption... options) throws IOException {
 		Files.write(file, string.getBytes(StandardCharsets.UTF_8), options);
 	}

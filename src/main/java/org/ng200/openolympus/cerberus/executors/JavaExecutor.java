@@ -91,7 +91,7 @@ Executor {
 		stringBuilder.append("\n};");
 		final String policyString = stringBuilder.toString();
 
-		FileAccess.writeUTFStringToFile(policyFile, policyString);
+		FileAccess.writeUTF8StringToFile(policyFile, policyString);
 	}
 
 	@Override
