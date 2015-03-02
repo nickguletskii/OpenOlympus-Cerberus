@@ -39,14 +39,14 @@ public class TemporaryStorage implements AutoCloseable {
 	public static void cleanUp(final SolutionJudge judge) {
 		TemporaryStorage.storages.computeIfAbsent(judge,
 				(key) -> new ArrayList<>()).forEach(
-						(storage) -> {
-							try {
-								storage.close();
-							} catch (final Exception e) {
-								throw new RuntimeException(
-										"Couldn't clean up temporary storage: ", e);
-							}
-						});
+				(storage) -> {
+					try {
+						storage.close();
+					} catch (final Exception e) {
+						throw new RuntimeException(
+								"Couldn't clean up temporary storage: ", e);
+					}
+				});
 		TemporaryStorage.storages.remove(judge);
 	}
 
@@ -60,7 +60,32 @@ public class TemporaryStorage implements AutoCloseable {
 		Janitor.registerCleanupStep((judge) -> TemporaryStorage.cleanUp(judge));
 	}
 
-	private final Path directory;
+	private Path directory;
+
+	public Path getDirectory() {
+		return directory;
+	}
+
+	public void setDirectory(Path directory) {
+		this.directory = directory;
+	}
+
+	public boolean isClosed() {
+		return closed;
+	}
+
+	public void setClosed(boolean closed) {
+		this.closed = closed;
+	}
+
+	public static ConcurrentMap<SolutionJudge, List<TemporaryStorage>> getStorages() {
+		return storages;
+	}
+
+	public static void setStorages(
+			ConcurrentMap<SolutionJudge, List<TemporaryStorage>> storages) {
+		TemporaryStorage.storages = storages;
+	}
 
 	private boolean closed;
 
@@ -68,6 +93,10 @@ public class TemporaryStorage implements AutoCloseable {
 			"/tmp/ramdisk");
 
 	private static ConcurrentMap<SolutionJudge, List<TemporaryStorage>> storages = new ConcurrentHashMap<>();
+
+	public TemporaryStorage() {
+		// Serialization constructor
+	}
 
 	public TemporaryStorage(final SolutionJudge holder) throws IOException {
 		TemporaryStorage.register(holder, this);

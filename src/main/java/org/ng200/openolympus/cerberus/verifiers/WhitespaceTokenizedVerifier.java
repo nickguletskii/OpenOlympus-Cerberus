@@ -36,10 +36,22 @@ import org.ng200.openolympus.cerberus.VerifierResult;
 
 public class WhitespaceTokenizedVerifier {
 
-	private final Path file;
+	private Path file;
 
 	private final Pattern removeWhitespaceBeforeEOL = Pattern.compile("\\s+$");
 	private final Pattern removeDuplicateWhitespace = Pattern.compile("(\\s)+");
+
+	public WhitespaceTokenizedVerifier() {
+		// Serialization constructor
+	}
+
+	public Path getFile() {
+		return file;
+	}
+
+	public void setFile(Path file) {
+		this.file = file;
+	}
 
 	public WhitespaceTokenizedVerifier(final Path file) {
 		this.file = file;

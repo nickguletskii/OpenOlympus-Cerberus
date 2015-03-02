@@ -65,13 +65,81 @@ public class SolutionResultBuilder implements Serializable {
 	private long peakMemory = -1;
 	private long syscall = -1;
 
-	private final Map<SolutionCheckingStage, Boolean> stages = new HashMap<>();
-	private final Map<SolutionCheckingStage, String> errorMessages = new HashMap<>();
+	private Map<SolutionCheckingStage, Boolean> stages = new HashMap<>();
+	private Map<SolutionCheckingStage, String> errorMessages = new HashMap<>();
 
 	private boolean failed = false;
 	private SolutionResult.Result resultType = null;
 	private AnswerCheckResult checkingResult;
 	private BigDecimal score = BigDecimal.ZERO;
+
+	public SolutionResultBuilder() {
+		// Serialization constructor
+	}
+
+	public long getTimeUsed() {
+		return timeUsed;
+	}
+
+	public void setTimeUsed(long timeUsed) {
+		this.timeUsed = timeUsed;
+	}
+
+	public long getCpuTime() {
+		return cpuTime;
+	}
+
+	public void setCpuTime(long cpuTime) {
+		this.cpuTime = cpuTime;
+	}
+
+	public long getPeakMemory() {
+		return peakMemory;
+	}
+
+	public void setPeakMemory(long peakMemory) {
+		this.peakMemory = peakMemory;
+	}
+
+	public long getSyscall() {
+		return syscall;
+	}
+
+	public void setSyscall(long syscall) {
+		this.syscall = syscall;
+	}
+
+	public boolean isFailed() {
+		return failed;
+	}
+
+	public void setFailed(boolean failed) {
+		this.failed = failed;
+	}
+
+	public SolutionResult.Result getResultType() {
+		return resultType;
+	}
+
+	public void setResultType(SolutionResult.Result resultType) {
+		this.resultType = resultType;
+	}
+
+	public AnswerCheckResult getCheckingResult() {
+		return checkingResult;
+	}
+
+	public void setCheckingResult(AnswerCheckResult checkingResult) {
+		this.checkingResult = checkingResult;
+	}
+
+	public Map<SolutionCheckingStage, Boolean> getStages() {
+		return stages;
+	}
+
+	public Map<SolutionCheckingStage, String> getErrorMessages() {
+		return errorMessages;
+	}
 
 	public SolutionResult build() {
 		if (this.resultType == SolutionResult.Result.SECURITY_VIOLATION) {

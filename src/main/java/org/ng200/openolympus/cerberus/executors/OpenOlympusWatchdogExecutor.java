@@ -40,6 +40,8 @@ import org.ng200.openolympus.cerberus.ExecutionResult;
 
 public abstract class OpenOlympusWatchdogExecutor implements Executor {
 
+	private static boolean alreadyEnsuredUserExists;
+
 	private static String callNativeId(boolean group) throws IOException {
 		OpenOlympusWatchdogExecutor.ensureUserAndGroupExists();
 
@@ -67,6 +69,8 @@ public abstract class OpenOlympusWatchdogExecutor implements Executor {
 	}
 
 	private static void ensureUserAndGroupExists() throws IOException {
+		if (alreadyEnsuredUserExists)
+			return;
 		final CommandLine commandLine = new CommandLine("sudo");
 		commandLine.addArgument("useradd");
 		commandLine.addArgument("-U");
@@ -77,15 +81,16 @@ public abstract class OpenOlympusWatchdogExecutor implements Executor {
 
 		final DefaultExecutor executor = new DefaultExecutor();
 		executor.setExitValues(new int[] {
-		                                  0, /* Added user */
-		                                  9
-		                                  /* User already exists */
+				0, /* Added user */
+				9
+		/* User already exists */
 		});
 
 		executor.setWatchdog(new ExecuteWatchdog(1000));
 
 		try {
 			executor.execute(commandLine);
+			alreadyEnsuredUserExists = true;
 		} catch (final ExecuteException e) {
 			throw new ExecuteException(
 					"Couldn't find user/group id of the olympuswatchdogchild user/group: does it even exist?",
@@ -147,13 +152,13 @@ public abstract class OpenOlympusWatchdogExecutor implements Executor {
 		case "SECURITY_VIOLATION":
 			return new ExecutionResult(
 					ExecutionResult.ExecutionResultType
-					.valueOf(resultTypeString),
+							.valueOf(resultTypeString),
 					Long.valueOf(matcher.group(3)), Long.valueOf(matcher
 							.group(2)), Long.valueOf(matcher.group(4)), -1);
 		default:
 			return new ExecutionResult(
 					ExecutionResult.ExecutionResultType
-					.valueOf(resultTypeString),
+							.valueOf(resultTypeString),
 					-1, -1, -1, -1);
 		}
 	}

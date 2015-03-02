@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 public class JavaCompiler implements Compiler {
 	private static final Logger logger = LoggerFactory
 			.getLogger(JavaCompiler.class);
-	private final List<String> arguments = new ArrayList<>();
+	private List<String> arguments = new ArrayList<>();
 
 	public JavaCompiler() {
 	}
@@ -57,10 +57,18 @@ public class JavaCompiler implements Compiler {
 		this.arguments.add(argument);
 	}
 
+	public List<String> getArguments() {
+		return arguments;
+	}
+
+	public void setArguments(List<String> arguments) {
+		this.arguments = arguments;
+	}
+
 	@Override
 	public void compile(final List<Path> inputFiles, final Path outputFile,
 			final Map<String, Object> additionalParameters)
-					throws CompilationException, IOException {
+			throws CompilationException, IOException {
 
 		FileAccess.createDirectories(outputFile);
 
@@ -86,8 +94,8 @@ public class JavaCompiler implements Compiler {
 
 		final DefaultExecutor executor = new DefaultExecutor();
 		executor.setExitValues(new int[] {
-		                                  0,
-		                                  1
+				0,
+				1
 		});
 
 		final ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
@@ -112,11 +120,11 @@ public class JavaCompiler implements Compiler {
 				final Pattern pattern = Pattern.compile(
 						"^("
 								+ inputFiles
-								.stream()
-								.map(file -> Pattern.quote(file
-										.toAbsolutePath().toString()))
+										.stream()
+										.map(file -> Pattern.quote(file
+												.toAbsolutePath().toString()))
 										.collect(Collectors.joining("|"))
-										+ "):", Pattern.MULTILINE);
+								+ "):", Pattern.MULTILINE);
 				errorString = pattern.matcher(errorString).replaceAll("");
 
 				JavaCompiler.logger.debug("Compilation error: {}", errorString);

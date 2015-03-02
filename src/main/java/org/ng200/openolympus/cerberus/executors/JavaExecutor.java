@@ -46,9 +46,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class JavaExecutor extends OpenOlympusWatchdogExecutor implements
-Executor {
+		Executor {
 
-	private final TemporaryStorage storage;
+	private transient TemporaryStorage storage;
 	private long memoryLimit = 0;
 	private long cpuLimit = 0;
 	private long timeLimit = 0;
@@ -59,8 +59,36 @@ Executor {
 
 	private static final Logger logger = LoggerFactory
 			.getLogger(SandboxedExecutor.class);
-	private final List<String> writeFiles;
-	private final List<String> readFiles = new ArrayList<String>();
+	private List<String> writeFiles;
+	private List<String> readFiles = new ArrayList<String>();
+
+	public JavaExecutor() {
+		// Serialization constructor
+	}
+
+	public TemporaryStorage getStorage() {
+		return storage;
+	}
+
+	public void setStorage(TemporaryStorage storage) {
+		this.storage = storage;
+	}
+
+	public List<String> getWriteFiles() {
+		return writeFiles;
+	}
+
+	public void setWriteFiles(List<String> writeFiles) {
+		this.writeFiles = writeFiles;
+	}
+
+	public List<String> getReadFiles() {
+		return readFiles;
+	}
+
+	public void setReadFiles(List<String> readFiles) {
+		this.readFiles = readFiles;
+	}
 
 	public JavaExecutor(final SolutionJudge holder,
 			final List<String> writeFiles) throws IOException {
@@ -74,20 +102,20 @@ Executor {
 		final StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append("grant {\n");
 		stringBuilder
-		.append(this.readFiles
-				.stream()
-				.map(f -> MessageFormat
-						.format("  permission java.io.FilePermission \"{0}\", \"read\";\n",
-								chrootRoot.resolve(f)))
-								.collect(Collectors.joining("\n")));
+				.append(this.readFiles
+						.stream()
+						.map(f -> MessageFormat
+								.format("  permission java.io.FilePermission \"{0}\", \"read\";\n",
+										chrootRoot.resolve(f)))
+						.collect(Collectors.joining("\n")));
 		stringBuilder.append("\n");
 		stringBuilder
-		.append(this.writeFiles
-				.stream()
-				.map(f -> MessageFormat
-						.format("  permission java.io.FilePermission \"{0}\", \"write\";\n",
-								chrootRoot.resolve(f)))
-								.collect(Collectors.joining("\n")));
+				.append(this.writeFiles
+						.stream()
+						.map(f -> MessageFormat
+								.format("  permission java.io.FilePermission \"{0}\", \"write\";\n",
+										chrootRoot.resolve(f)))
+						.collect(Collectors.joining("\n")));
 		stringBuilder.append("\n};");
 		final String policyString = stringBuilder.toString();
 
@@ -216,7 +244,7 @@ Executor {
 		FileAccess.copy(
 				file,
 				this.storage.getPath().resolve("chroot")
-				.resolve(file.getFileName()),
+						.resolve(file.getFileName()),
 				StandardCopyOption.COPY_ATTRIBUTES);
 		this.readFiles.add(file.getFileName().toString());
 	}

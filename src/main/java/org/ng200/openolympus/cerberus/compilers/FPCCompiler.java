@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
 public class FPCCompiler implements Compiler {
 	private static final Logger logger = LoggerFactory
 			.getLogger(FPCCompiler.class);
-	private final List<String> arguments = new ArrayList<>();
+	private List<String> arguments = new ArrayList<>();
 
 	public FPCCompiler() {
 	}
@@ -55,10 +55,18 @@ public class FPCCompiler implements Compiler {
 		this.arguments.add(argument);
 	}
 
+	public void setArguments(List<String> arguments) {
+		this.arguments = arguments;
+	}
+
+	public List<String> getArguments() {
+		return arguments;
+	}
+
 	@Override
 	public void compile(final List<Path> inputFiles, final Path outputFile,
 			final Map<String, Object> additionalParameters)
-					throws CompilationException {
+			throws CompilationException {
 		FPCCompiler.logger.debug("Compiling {} to {} using FPC", inputFiles,
 				outputFile);
 
@@ -82,8 +90,8 @@ public class FPCCompiler implements Compiler {
 
 		final DefaultExecutor executor = new DefaultExecutor();
 		executor.setExitValues(new int[] {
-		                                  0,
-		                                  1
+				0,
+				1
 		});
 
 		final ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
@@ -109,13 +117,13 @@ public class FPCCompiler implements Compiler {
 						.compile(
 								"^("
 										+ inputFiles
-										.stream()
-										.map(file -> Pattern.quote(file
-												.getFileName()
-												.toString()))
+												.stream()
+												.map(file -> Pattern.quote(file
+														.getFileName()
+														.toString()))
 												.collect(
 														Collectors.joining("|"))
-														+ ")", Pattern.MULTILINE);
+										+ ")", Pattern.MULTILINE);
 
 				FPCCompiler.logger.debug("Compilation error: {}", errorString);
 

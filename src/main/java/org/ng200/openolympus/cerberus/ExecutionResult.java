@@ -33,7 +33,11 @@ public class ExecutionResult {
 	private long realTime;
 	private long cpuTime;
 	private long syscall;
-
+	
+	public ExecutionResult(){
+		// Serialization constructor
+	}
+			
 	public ExecutionResult(final ExecutionResultType resultType,
 			final long realTime, final long cpuTime, final long memoryPeak,
 			final long syscall) {

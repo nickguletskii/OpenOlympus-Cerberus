@@ -32,7 +32,18 @@ public class SharedTemporaryStorage implements AutoCloseable, Serializable {
 	 *
 	 */
 	private static final long serialVersionUID = -1569837982555606657L;
-	private final Path directory;
+	private Path directory;
+
+	public SharedTemporaryStorage() {
+	}
+
+	public Path getDirectory() {
+		return directory;
+	}
+
+	public void setDirectory(Path directory) {
+		this.directory = directory;
+	}
 
 	public SharedTemporaryStorage(final Path storagePath) throws IOException {
 		final Path temporaryStoragePath = storagePath.resolve("tmp");

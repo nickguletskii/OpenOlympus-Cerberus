@@ -24,20 +24,29 @@ package org.ng200.openolympus.cerberus;
 
 import org.ng200.openolympus.cerberus.exceptions.CompilerError;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class CompilerResult {
 	public static enum CompileResultType {
 		OK, COMPILE_ERROR, INTERNAL_ERROR
 	}
 
-	private final CompilerError error;
-	private final CompileResultType resultType;
+	private CompilerError error;
+	private CompileResultType resultType;
+
+	public void setResultType(CompileResultType resultType) {
+		this.resultType = resultType;
+	}
 
 	public CompilerResult(final CompileResultType resultType) {
 		this(resultType, null);
 	}
 
-	public CompilerResult(final CompileResultType resultType,
-			final CompilerError error) {
+	@JsonCreator
+	public CompilerResult(
+			@JsonProperty("resultType") final CompileResultType resultType,
+			@JsonProperty("error") final CompilerError error) {
 		this.resultType = resultType;
 		this.error = error;
 	}

@@ -67,19 +67,43 @@ public class SolutionResult implements Serializable {
 	 */
 	private static final long serialVersionUID = -1021785296863034669L;;
 
-	private final Result result;
+	private Result result;
 
-	private final long cpuTime;
+	private long cpuTime;
 
-	private final long realTime;
+	private long realTime;
 
-	private final long memoryPeak;
+	private long memoryPeak;
 
-	private final long unauthorisedSyscall;
+	private long unauthorisedSyscall;
 
 	private BigDecimal score;
 
 	private Map<SolutionCheckingStage, String> errorMessages;
+
+	public SolutionResult() {
+		// Serialization constructor
+	}
+
+	public void setResult(Result result) {
+		this.result = result;
+	}
+
+	public void setCpuTime(long cpuTime) {
+		this.cpuTime = cpuTime;
+	}
+
+	public void setRealTime(long realTime) {
+		this.realTime = realTime;
+	}
+
+	public void setMemoryPeak(long memoryPeak) {
+		this.memoryPeak = memoryPeak;
+	}
+
+	public void setUnauthorisedSyscall(long unauthorisedSyscall) {
+		this.unauthorisedSyscall = unauthorisedSyscall;
+	}
 
 	protected SolutionResult(final long syscall,
 			final Map<SolutionCheckingStage, Boolean> stages,

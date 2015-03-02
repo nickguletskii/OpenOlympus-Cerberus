@@ -46,7 +46,7 @@ public class SandboxedExecutor extends OpenOlympusWatchdogExecutor implements
 		Executor {
 	public static final Path CHROOT_TEMPLATE_PATH = FileSystems.getDefault()
 			.getPath("/usr/chroot");
-	private final TemporaryStorage storage;
+	private transient TemporaryStorage storage;
 	private long memoryLimit = 0;
 	private long cpuLimit = 0;
 	private long timeLimit = 0;
@@ -58,11 +58,23 @@ public class SandboxedExecutor extends OpenOlympusWatchdogExecutor implements
 	private static final Logger logger = LoggerFactory
 			.getLogger(SandboxedExecutor.class);
 
+	public SandboxedExecutor() {
+		// Serialization constructor
+	}
+
+	public TemporaryStorage getStorage() {
+		return storage;
+	}
+
+	public void setStorage(TemporaryStorage storage) {
+		this.storage = storage;
+	}
+
 	public SandboxedExecutor(final SolutionJudge holder) throws IOException {
 		this.storage = new TemporaryStorage(holder);
 		SandboxedExecutor.logger.info("Chroot template path: {}",
 				SandboxedExecutor.CHROOT_TEMPLATE_PATH.toAbsolutePath()
-				.toString());
+						.toString());
 		FileAccess.rsync(SandboxedExecutor.CHROOT_TEMPLATE_PATH,
 				this.storage.getPath());
 	}
@@ -92,7 +104,7 @@ public class SandboxedExecutor extends OpenOlympusWatchdogExecutor implements
 		commandLine.addArgument("--");
 		commandLine.addArgument("/"
 				+ this.storage.getPath().resolve("chroot")
-				.relativize(chrootedProgram).toString());
+						.relativize(chrootedProgram).toString());
 
 		final DefaultExecutor executor = new DefaultExecutor();
 
@@ -172,7 +184,7 @@ public class SandboxedExecutor extends OpenOlympusWatchdogExecutor implements
 		FileAccess.copy(
 				file,
 				this.storage.getPath().resolve("chroot")
-				.resolve(file.getFileName()));
+						.resolve(file.getFileName()));
 	}
 
 	@Override

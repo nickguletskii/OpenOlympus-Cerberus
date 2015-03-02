@@ -28,8 +28,21 @@ public class VerifierResult extends AnswerCheckResult {
 	 *
 	 */
 	private static final long serialVersionUID = 1381831130193472420L;
-	private final String message;
-	private final AnswerCheckResult.CheckingResultType checkingResultType;
+	private String message;
+	private AnswerCheckResult.CheckingResultType checkingResultType;
+
+	public VerifierResult() {
+		// Serialization constructor
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	public void setCheckingResultType(
+			AnswerCheckResult.CheckingResultType checkingResultType) {
+		this.checkingResultType = checkingResultType;
+	}
 
 	public VerifierResult(
 			final AnswerCheckResult.CheckingResultType resultType,

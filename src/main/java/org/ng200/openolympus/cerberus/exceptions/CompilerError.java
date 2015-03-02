@@ -28,7 +28,11 @@ public class CompilerError extends CompilationException {
 	 *
 	 */
 	private static final long serialVersionUID = 4068648124145091620L;
-	private final String errors;
+	private String errors;
+
+	public void setErrors(String errors) {
+		this.errors = errors;
+	}
 
 	public CompilerError(final String message, final String errors) {
 		super(message);

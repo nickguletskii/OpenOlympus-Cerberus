@@ -26,6 +26,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Path;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class SharedTemporaryStorageFactory implements Serializable {
 	/**
 	 *
@@ -33,11 +36,9 @@ public class SharedTemporaryStorageFactory implements Serializable {
 	private static final long serialVersionUID = 4888020413912755534L;
 	private Path storagePath;
 
-	public SharedTemporaryStorageFactory() {
-		// Serialization constructor
-	}
-
-	public SharedTemporaryStorageFactory(final Path storagePath) {
+	@JsonCreator
+	public SharedTemporaryStorageFactory(
+			@JsonProperty("storagePath") final Path storagePath) {
 		this.storagePath = storagePath;
 	}
 
@@ -45,4 +46,9 @@ public class SharedTemporaryStorageFactory implements Serializable {
 			throws IOException {
 		return new SharedTemporaryStorage(this.storagePath);
 	}
+
+	public Path getStoragePath() {
+		return storagePath;
+	}
+
 }

@@ -52,6 +52,8 @@ import org.ng200.openolympus.cerberus.verifiers.WhitespaceTokenizedVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class DefaultSolutionJudge extends SolutionJudge {
 	private static enum ProgramLanguage {
 		CPP, FPC, JAVA
@@ -66,23 +68,27 @@ public class DefaultSolutionJudge extends SolutionJudge {
 			.getLogger(DefaultSolutionJudge.class);
 
 	private transient TemporaryStorage storage;
-	private final SharedTemporaryStorage sharedStorage;
-	private final String inputFileName;
-	private final String outputFileName;
-	private final Path program;
-	private final boolean consoleInput;
-	private final String charset;
-	private final SolutionResultBuilder baseResultBuilder = new SolutionResultBuilder();
+	private SharedTemporaryStorage sharedStorage;
+	private String inputFileName;
+	private String outputFileName;
+	private Path program;
+	private boolean consoleInput;
+	private String charset;
+	private SolutionResultBuilder baseResultBuilder = new SolutionResultBuilder();
 
 	private Boolean compiled = false;
 
 	private ProgramLanguage programLanguage = null;
 
+	public DefaultSolutionJudge() {
+		// Serialization constructor
+	}
+
 	public DefaultSolutionJudge(final String inputFileName,
 			final String outputFileName, final boolean consoleInput,
 			final String charset,
 			final SharedTemporaryStorageFactory storageFactory)
-					throws IOException {
+			throws IOException {
 		this.inputFileName = inputFileName;
 		this.outputFileName = outputFileName;
 		this.consoleInput = consoleInput;
@@ -97,15 +103,15 @@ public class DefaultSolutionJudge extends SolutionJudge {
 		resultBuilder.checkingStage(
 				() -> {
 					return new WhitespaceTokenizedVerifier(outputFile)
-					.isAnswerCorrect(bytes,
-							Charset.forName(this.charset));
+							.isAnswerCorrect(bytes,
+									Charset.forName(this.charset));
 				}).checkingStage(
-						() -> {
-							resultBuilder.setScore(maximumScore);
-							return new VerifierResult(
-									AnswerCheckResult.CheckingResultType.OK,
-									"Successful judgement.");
-						});
+				() -> {
+					resultBuilder.setScore(maximumScore);
+					return new VerifierResult(
+							AnswerCheckResult.CheckingResultType.OK,
+							"Successful judgement.");
+				});
 	}
 
 	private void checkAnswerFile(final SolutionResultBuilder resultBuilder,
@@ -129,47 +135,47 @@ public class DefaultSolutionJudge extends SolutionJudge {
 	public void compile(final List<Path> sources, Properties properties) {
 		synchronized (this.compiled) {
 			this.baseResultBuilder
-			.compileStage(() -> {
-				if (sources.size() != 1) {
-					throw new IllegalArgumentException(
-							"DefaultSolutionJudge only supports one source file!");
-				}
-				final Path sourceFile = sources.get(0);
+					.compileStage(() -> {
+						if (sources.size() != 1) {
+							throw new IllegalArgumentException(
+									"DefaultSolutionJudge only supports one source file!");
+						}
+						final Path sourceFile = sources.get(0);
 
-				if (sourceFile.getFileName().toString()
-						.endsWith(".cpp")) {
-					final Path temporaryCopy = this.sharedStorage
-							.getPath().resolve("main.cpp");
+						if (sourceFile.getFileName().toString()
+								.endsWith(".cpp")) {
+							final Path temporaryCopy = this.sharedStorage
+									.getPath().resolve("main.cpp");
 
-					FileAccess.copy(sources.get(0), temporaryCopy);
+							FileAccess.copy(sources.get(0), temporaryCopy);
 
-					this.programLanguage = ProgramLanguage.CPP;
-					return this.compileCpp(temporaryCopy);
-				} else if (sourceFile.getFileName().toString()
-						.endsWith(".pas")) {
-					final Path temporaryCopy = this.sharedStorage
-							.getPath().resolve("main.pas");
+							this.programLanguage = ProgramLanguage.CPP;
+							return this.compileCpp(temporaryCopy);
+						} else if (sourceFile.getFileName().toString()
+								.endsWith(".pas")) {
+							final Path temporaryCopy = this.sharedStorage
+									.getPath().resolve("main.pas");
 
-					FileAccess.copy(sources.get(0), temporaryCopy);
+							FileAccess.copy(sources.get(0), temporaryCopy);
 
-					this.programLanguage = ProgramLanguage.FPC;
-					return this.compileFpc(temporaryCopy);
-				} else if (sourceFile.getFileName().toString()
-						.endsWith(".java")) {
-					final Path temporaryCopy = this.sharedStorage
-							.getPath().resolve("Main.java");
+							this.programLanguage = ProgramLanguage.FPC;
+							return this.compileFpc(temporaryCopy);
+						} else if (sourceFile.getFileName().toString()
+								.endsWith(".java")) {
+							final Path temporaryCopy = this.sharedStorage
+									.getPath().resolve("Main.java");
 
-					FileAccess.copy(sources.get(0), temporaryCopy);
+							FileAccess.copy(sources.get(0), temporaryCopy);
 
-					this.programLanguage = ProgramLanguage.JAVA;
-					return this.compileJava(temporaryCopy);
-				} else {
-					return new CompilerResult(
-							CompilerResult.CompileResultType.COMPILE_ERROR,
-							new CompilerError("Unknown file type",
-									"Please check the file type."));
-				}
-			});
+							this.programLanguage = ProgramLanguage.JAVA;
+							return this.compileJava(temporaryCopy);
+						} else {
+							return new CompilerResult(
+									CompilerResult.CompileResultType.COMPILE_ERROR,
+									new CompilerError("Unknown file type",
+											"Please check the file type."));
+						}
+					});
 		}
 	}
 
@@ -219,19 +225,19 @@ public class DefaultSolutionJudge extends SolutionJudge {
 				.stream()
 				.filter((file) -> file.getFileName().toString()
 						.equals(this.outputFileName))
-						.findAny()
-						.orElseThrow(
-								() -> new IllegalArgumentException(
-										"Output file is not supplied"));
+				.findAny()
+				.orElseThrow(
+						() -> new IllegalArgumentException(
+								"Output file is not supplied"));
 
 		final Path inputFile = testFiles
 				.stream()
 				.filter((file) -> file.getFileName().toString()
 						.equals(this.inputFileName))
-						.findAny()
-						.orElseThrow(
-								() -> new IllegalArgumentException(
-										"Input file is not supplied"));
+				.findAny()
+				.orElseThrow(
+						() -> new IllegalArgumentException(
+								"Input file is not supplied"));
 
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		final ByteArrayOutputStream err = new ByteArrayOutputStream();
@@ -244,15 +250,15 @@ public class DefaultSolutionJudge extends SolutionJudge {
 						.setTimeLimit(
 								Long.valueOf(properties
 										.getProperty("realTimeLimit")))
-										.setMemoryLimit(
-												Long.valueOf(properties
-														.getProperty("memoryLimit")))
-														.setDiskLimit(
-																Long.valueOf(properties
-																		.getProperty("diskLimit")));
+						.setMemoryLimit(
+								Long.valueOf(properties
+										.getProperty("memoryLimit")))
+						.setDiskLimit(
+								Long.valueOf(properties
+										.getProperty("diskLimit")));
 
 				executor.setOutputStream(out).setErrorStream(err)
-				.setInputStream(in);
+						.setInputStream(in);
 				return executor.execute(this.program);
 			});
 			if (checkAnswer) {
@@ -274,10 +280,10 @@ public class DefaultSolutionJudge extends SolutionJudge {
 				.stream()
 				.filter((file) -> file.getFileName().toString()
 						.equals(this.outputFileName))
-						.findAny()
-						.orElseThrow(
-								() -> new IllegalArgumentException(
-										"Output file is not supplied"));
+				.findAny()
+				.orElseThrow(
+						() -> new IllegalArgumentException(
+								"Output file is not supplied"));
 		Path userOutputFile;
 		try {
 			userOutputFile = this.getStorage().getPath()
@@ -294,36 +300,36 @@ public class DefaultSolutionJudge extends SolutionJudge {
 						.setTimeLimit(
 								Long.valueOf(properties
 										.getProperty("realTimeLimit")))
-										.setMemoryLimit(
-												Long.valueOf(properties
-														.getProperty("memoryLimit")))
-														.setDiskLimit(
-																Long.valueOf(properties
-																		.getProperty("diskLimit")));
+						.setMemoryLimit(
+								Long.valueOf(properties
+										.getProperty("memoryLimit")))
+						.setDiskLimit(
+								Long.valueOf(properties
+										.getProperty("diskLimit")));
 
 				executor.setOutputStream(null).setErrorStream(null)
-				.setInputStream(null);
+						.setInputStream(null);
 
 				executor.provideFile(testFiles
 						.stream()
 						.filter((file) -> file.getFileName().toString()
 								.equals(this.inputFileName))
-								.findAny()
-								.orElseThrow(
-										() -> new IllegalArgumentException(
-												"Input file is not supplied")));
+						.findAny()
+						.orElseThrow(
+								() -> new IllegalArgumentException(
+										"Input file is not supplied")));
 				final ExecutionResult result = executor.execute(this.program);
 				return result;
 			});
 
 			resultBuilder
-			.checkingStage(
-					() -> FileExistsVerifier
-					.noFileNotFoundException(() -> executor
-							.getFile(this.outputFileName,
-									userOutputFile)))
-									.checkingStage(
-											() -> FileExistsVerifier.fileExists(userOutputFile));
+					.checkingStage(
+							() -> FileExistsVerifier
+									.noFileNotFoundException(() -> executor
+											.getFile(this.outputFileName,
+													userOutputFile)))
+					.checkingStage(
+							() -> FileExistsVerifier.fileExists(userOutputFile));
 			if (checkAnswer) {
 				this.checkAnswerFile(resultBuilder, maximumScore, outputFile,
 						userOutputFile);
@@ -332,6 +338,18 @@ public class DefaultSolutionJudge extends SolutionJudge {
 			throw new RuntimeException(
 					"Couldn't execute and check user's solution: ", e);
 		}
+	}
+
+	public SolutionResultBuilder getBaseResultBuilder() {
+		return this.baseResultBuilder;
+	}
+
+	public String getCharset() {
+		return this.charset;
+	}
+
+	public Boolean getCompiled() {
+		return this.compiled;
 	}
 
 	public SolutionResult getCurrentStatus() {
@@ -357,9 +375,30 @@ public class DefaultSolutionJudge extends SolutionJudge {
 		return null;
 	}
 
+	public String getInputFileName() {
+		return this.inputFileName;
+	}
+
+	public String getOutputFileName() {
+		return this.outputFileName;
+	}
+
+	@JsonIgnore
 	@Override
 	public Collection<String> getOutputFiles() {
 		return Lists.from(this.outputFileName);
+	}
+
+	public Path getProgram() {
+		return this.program;
+	}
+
+	public ProgramLanguage getProgramLanguage() {
+		return this.programLanguage;
+	}
+
+	public SharedTemporaryStorage getSharedStorage() {
+		return this.sharedStorage;
 	}
 
 	private synchronized TemporaryStorage getStorage() throws IOException {
@@ -374,6 +413,10 @@ public class DefaultSolutionJudge extends SolutionJudge {
 		synchronized (this.compiled) {
 			return this.compiled;
 		}
+	}
+
+	public boolean isConsoleInput() {
+		return this.consoleInput;
 	}
 
 	@Override
@@ -394,6 +437,42 @@ public class DefaultSolutionJudge extends SolutionJudge {
 					maximumScore, properties);
 		}
 		return resultBuilder.build();
+	}
+
+	public void setBaseResultBuilder(SolutionResultBuilder baseResultBuilder) {
+		this.baseResultBuilder = baseResultBuilder;
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
+	}
+
+	public void setCompiled(Boolean compiled) {
+		this.compiled = compiled;
+	}
+
+	public void setConsoleInput(boolean consoleInput) {
+		this.consoleInput = consoleInput;
+	}
+
+	public void setInputFileName(String inputFileName) {
+		this.inputFileName = inputFileName;
+	}
+
+	public void setOutputFileName(String outputFileName) {
+		this.outputFileName = outputFileName;
+	}
+
+	public void setProgram(Path program) {
+		this.program = program;
+	}
+
+	public void setProgramLanguage(ProgramLanguage programLanguage) {
+		this.programLanguage = programLanguage;
+	}
+
+	public void setSharedStorage(SharedTemporaryStorage sharedStorage) {
+		this.sharedStorage = sharedStorage;
 	}
 
 }
