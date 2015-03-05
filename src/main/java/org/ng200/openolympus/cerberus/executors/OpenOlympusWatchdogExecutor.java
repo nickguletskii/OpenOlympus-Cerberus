@@ -140,6 +140,9 @@ public abstract class OpenOlympusWatchdogExecutor implements Executor {
 							+ text + "\"");
 		}
 		final String resultTypeString = matcher.group(1);
+		final long realTime = Integer.valueOf(matcher.group(2));
+		final long cpuTime = Integer.valueOf(matcher.group(3));
+		final long memoryTime = Integer.valueOf(matcher.group(4));
 
 		switch (resultTypeString) {
 		case "OK":
@@ -153,8 +156,7 @@ public abstract class OpenOlympusWatchdogExecutor implements Executor {
 			return new ExecutionResult(
 					ExecutionResult.ExecutionResultType
 							.valueOf(resultTypeString),
-					Long.valueOf(matcher.group(3)), Long.valueOf(matcher
-							.group(2)), Long.valueOf(matcher.group(4)), -1);
+					realTime, cpuTime, memoryTime, -1);
 		default:
 			return new ExecutionResult(
 					ExecutionResult.ExecutionResultType
