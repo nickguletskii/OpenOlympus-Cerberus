@@ -98,7 +98,7 @@ public class DefaultSolutionJudge extends SolutionJudge {
 	}
 
 	protected void checkAnswer(final SolutionResultBuilder resultBuilder,
-			final Path outputFile, final byte[] bytes,
+			final Path inputFile, Path outputFile, final byte[] bytes,
 			final BigDecimal maximumScore) {
 		resultBuilder.checkingStage(
 				() -> {
@@ -115,9 +115,10 @@ public class DefaultSolutionJudge extends SolutionJudge {
 	}
 
 	private void checkAnswerFile(final SolutionResultBuilder resultBuilder,
-			final BigDecimal maximumScore, final Path outputFile,
-			final Path userOutputFile) throws IOException {
-		this.checkAnswer(resultBuilder, outputFile,
+			final BigDecimal maximumScore, final Path inputFile,
+			final Path outputFile, final Path userOutputFile)
+			throws IOException {
+		this.checkAnswer(resultBuilder, inputFile, outputFile,
 				FileAccess.readAllBytes(userOutputFile), maximumScore);
 	}
 
@@ -262,8 +263,8 @@ public class DefaultSolutionJudge extends SolutionJudge {
 				return executor.execute(this.program);
 			});
 			if (checkAnswer) {
-				this.checkAnswer(resultBuilder, outputFile, out.toByteArray(),
-						maximumScore);
+				this.checkAnswer(resultBuilder, inputFile, outputFile,
+						out.toByteArray(), maximumScore);
 			}
 		} catch (final IOException e) {
 			throw new RuntimeException(
@@ -284,6 +285,16 @@ public class DefaultSolutionJudge extends SolutionJudge {
 				.orElseThrow(
 						() -> new IllegalArgumentException(
 								"Output file is not supplied"));
+
+		final Path inputFile = testFiles
+				.stream()
+				.filter((file) -> file.getFileName().toString()
+						.equals(this.inputFileName))
+				.findAny()
+				.orElseThrow(
+						() -> new IllegalArgumentException(
+								"Input file is not supplied"));
+
 		Path userOutputFile;
 		try {
 			userOutputFile = this.getStorage().getPath()
@@ -310,14 +321,7 @@ public class DefaultSolutionJudge extends SolutionJudge {
 				executor.setOutputStream(null).setErrorStream(null)
 						.setInputStream(null);
 
-				executor.provideFile(testFiles
-						.stream()
-						.filter((file) -> file.getFileName().toString()
-								.equals(this.inputFileName))
-						.findAny()
-						.orElseThrow(
-								() -> new IllegalArgumentException(
-										"Input file is not supplied")));
+				executor.provideFile(inputFile);
 				final ExecutionResult result = executor.execute(this.program);
 				return result;
 			});
@@ -331,8 +335,8 @@ public class DefaultSolutionJudge extends SolutionJudge {
 					.checkingStage(
 							() -> FileExistsVerifier.fileExists(userOutputFile));
 			if (checkAnswer) {
-				this.checkAnswerFile(resultBuilder, maximumScore, outputFile,
-						userOutputFile);
+				this.checkAnswerFile(resultBuilder, maximumScore, inputFile,
+						outputFile, userOutputFile);
 			}
 		} catch (final IOException e) {
 			throw new RuntimeException(
