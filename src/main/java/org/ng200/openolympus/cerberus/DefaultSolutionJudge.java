@@ -97,7 +97,7 @@ public class DefaultSolutionJudge extends SolutionJudge {
 		this.program = this.sharedStorage.getPath().resolve("program");
 	}
 
-	private void checkAnswer(final SolutionResultBuilder resultBuilder,
+	protected void checkAnswer(final SolutionResultBuilder resultBuilder,
 			final Path outputFile, final byte[] bytes,
 			final BigDecimal maximumScore) {
 		resultBuilder.checkingStage(
