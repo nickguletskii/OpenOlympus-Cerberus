@@ -25,12 +25,16 @@ package org.ng200.openolympus.cerberus.executors;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.PosixFilePermission;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
@@ -41,6 +45,7 @@ import org.ng200.openolympus.FileAccess;
 import org.ng200.openolympus.cerberus.ExecutionResult;
 import org.ng200.openolympus.cerberus.ExecutionResult.ExecutionResultType;
 import org.ng200.openolympus.cerberus.SolutionJudge;
+import org.ng200.openolympus.cerberus.util.Lists;
 import org.ng200.openolympus.cerberus.util.TemporaryStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,14 +139,40 @@ public class JavaExecutor extends OpenOlympusWatchdogExecutor implements
 
 		final Path chrootedProgram = chrootRoot.resolve(program.getFileName()
 				.toString());
-		FileAccess.copyDirectory(program, chrootedProgram);
+
+		FileAccess.createDirectories(chrootedProgram);
+		FileAccess.copyDirectory(program, chrootedProgram,
+				StandardCopyOption.REPLACE_EXISTING,
+				StandardCopyOption.COPY_ATTRIBUTES);
+
 		final Path outOfMemoryFile = chrootRoot.resolve("outOfMemory");
 
 		final Path policyFile = this.storage.getPath().resolve("olymp.policy");
 
+		try (Stream<Path> paths = FileAccess.walkPaths(storage.getPath())) {
+			paths.forEach(path -> {
+				try {
+					Files.setPosixFilePermissions(
+							path,
+							new HashSet<PosixFilePermission>(Lists.from(
+									PosixFilePermission.OWNER_EXECUTE,
+									PosixFilePermission.OWNER_READ,
+									PosixFilePermission.OWNER_WRITE,
+									PosixFilePermission.GROUP_EXECUTE,
+									PosixFilePermission.GROUP_READ,
+									PosixFilePermission.GROUP_WRITE,
+									PosixFilePermission.OTHERS_EXECUTE,
+									PosixFilePermission.OTHERS_READ)));
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			});
+		}
+
 		this.buildPolicy(chrootRoot, policyFile);
 
-		final CommandLine commandLine = new CommandLine("olrunner");
+		final CommandLine commandLine = new CommandLine("sudo");
+		commandLine.addArgument("olympus_watchdog");
 
 		this.setUpOlrunnerLimits(commandLine);
 
@@ -152,7 +183,7 @@ public class JavaExecutor extends OpenOlympusWatchdogExecutor implements
 
 		commandLine.addArgument("/usr/bin/java");
 
-		commandLine.addArgument("-cp");
+		commandLine.addArgument("-classpath");
 		commandLine.addArgument(chrootedProgram.toAbsolutePath().toString());
 		commandLine.addArgument("-Djava.security.manager");
 		commandLine.addArgument("-Djava.security.policy="
@@ -295,7 +326,7 @@ public class JavaExecutor extends OpenOlympusWatchdogExecutor implements
 	protected void setUpOlrunnerLimits(final CommandLine commandLine)
 			throws ExecuteException, IOException {
 		commandLine.addArgument(MessageFormat.format("--memorylimit={0}",
-				Long.toString(Long.MAX_VALUE)));
+				Long.toString(this.getMemoryLimit())));
 
 		commandLine.addArgument(MessageFormat.format("--cpulimit={0}",
 				Long.toString(this.getCpuLimit())));

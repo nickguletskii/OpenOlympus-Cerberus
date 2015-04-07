@@ -66,13 +66,13 @@ public class FileAccess {
 		return Files.copy(source, target, copyOptions);
 	}
 
-	public static void copyDirectory(final Path from, final Path to)
-			throws IOException {
+	public static void copyDirectory(final Path from, final Path to,
+			CopyOption... copyOptions) throws IOException {
 		try (Stream<Path> files = Files.walk(from)) {
 			for (final Path file : files.collect(Collectors.toList())) {
 				final Path target = to.resolve(from.relativize(file));
 				Files.createDirectories(target.getParent());
-				Files.copy(file, target);
+				Files.copy(file, target, copyOptions);
 			}
 		}
 	}
@@ -190,7 +190,7 @@ public class FileAccess {
 		final ByteArrayOutputStream outAndErr = new ByteArrayOutputStream();
 		executor.setStreamHandler(new PumpStreamHandler(outAndErr));
 		executor.setExitValues(new int[] {
-		                                  0
+			0
 		});
 		try {
 			executor.execute(commandLine);
