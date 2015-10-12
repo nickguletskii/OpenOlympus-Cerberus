@@ -34,8 +34,10 @@ import org.ng200.openolympus.FileAccess;
 import org.ng200.openolympus.SharedTemporaryStorageFactory;
 import org.ng200.openolympus.cerberus.DefaultSolutionJudge;
 import org.ng200.openolympus.cerberus.Janitor;
+import org.ng200.openolympus.cerberus.SolutionJudge;
 import org.ng200.openolympus.cerberus.SolutionResult;
 import org.ng200.openolympus.cerberus.SolutionResult.Result;
+import org.ng200.openolympus.cerberus.util.ExceptionalBiConsumer;
 import org.ng200.openolympus.cerberus.util.Lists;
 import org.ng200.openolympus.cerberus.util.TemporaryStorage;
 import org.slf4j.Logger;
@@ -57,11 +59,30 @@ public class TestDefaultSolutionJudge {
 	}
 
 	private void successfulTest(String filename, String contents)
-			throws IOException {
+			throws Exception {
+		withJudgeThatCompiles(filename, contents, (judge, storage) -> {
+			this.testOnTest(judge, defaultTestProperties(), storage, "",
+					"hello world", Result.OK);
+			this.testOnTest(judge, defaultTestProperties(), storage, "", "foo",
+					Result.WRONG_ANSWER);
+		});
+	}
+
+	private void runtimeErrorTest(String filename, String contents)
+			throws Exception {
+		withJudgeThatCompiles(filename, contents, (judge, storage) -> {
+			this.testOnTest(judge, defaultTestProperties(), storage, "", "",
+					Result.RUNTIME_ERROR);
+		});
+	}
+
+	private void withJudgeThatCompiles(String filename, String contents,
+			ExceptionalBiConsumer<SolutionJudge, TemporaryStorage> testRunnable)
+			throws Exception {
 		final SharedTemporaryStorageFactory storageFactory = new SharedTemporaryStorageFactory(
 				FileSystems.getDefault().getPath("/tmp/"));
 		final DefaultSolutionJudge judge = new DefaultSolutionJudge(
-				"input.txt", "output.txt", true, "US-ASCII", storageFactory);
+				true, "input.txt", "output.txt", "US-ASCII", storageFactory);
 		try (TemporaryStorage storage = new TemporaryStorage(judge);) {
 
 			final Path testSrc = storage.getPath().resolve(filename);
@@ -79,10 +100,8 @@ public class TestDefaultSolutionJudge {
 
 			Assert.assertEquals(null, judge.getCurrentStatus().getResult());
 
-			this.testOnTest(judge, properties, storage, "", "hello world",
-					Result.OK);
-			this.testOnTest(judge, properties, storage, "", "foo",
-					Result.WRONG_ANSWER);
+			testRunnable.accept(judge, storage);
+
 		} finally {
 			Janitor.cleanUp(judge);
 		}
@@ -92,7 +111,7 @@ public class TestDefaultSolutionJudge {
 		final SharedTemporaryStorageFactory storageFactory = new SharedTemporaryStorageFactory(
 				FileSystems.getDefault().getPath("/tmp/"));
 		final DefaultSolutionJudge judge = new DefaultSolutionJudge(
-				"input.txt", "output.txt", true, "US-ASCII", storageFactory);
+				true, "input.txt", "output.txt", "US-ASCII", storageFactory);
 		try (TemporaryStorage storage = new TemporaryStorage(judge);) {
 
 			final Path testSrc = storage.getPath().resolve(fileName);
@@ -133,6 +152,24 @@ public class TestDefaultSolutionJudge {
 	}
 
 	@Test
+	public void testDefaultSolutionJudgeOnCppRuntimeError()
+			throws Exception {
+		this.runtimeErrorTest("test.cpp", new StringBuilder()
+
+		.append("#include<iostream>\n")
+
+		.append("#include<fstream>\n")
+		
+		.append("using namespace std;\n")
+
+		.append("int main(){\n")
+
+		.append("return -1;\n")
+
+		.append("}").toString());
+	}
+
+	@Test
 	public void testDefaultSolutionJudgeOnFPC() throws Exception {
 		this.successfulTest("test.pas", new StringBuilder()
 
@@ -170,7 +207,7 @@ public class TestDefaultSolutionJudge {
 		this.testCompileError("test.java");
 	}
 
-	private void testOnTest(DefaultSolutionJudge judge, Properties properties,
+	private void testOnTest(SolutionJudge judge, Properties properties,
 			TemporaryStorage storage, String inputString, String outputString,
 			Result expectedResult) throws IOException {
 		final Path input = storage.getPath().resolve("input.txt");

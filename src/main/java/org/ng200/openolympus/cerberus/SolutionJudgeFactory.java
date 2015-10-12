@@ -28,8 +28,26 @@ import java.util.Properties;
 
 import org.ng200.openolympus.SharedTemporaryStorageFactory;
 
+/**
+ * 
+ * A solution judge factory is the core component of the OpenOlympus Cerberus
+ * testing platform. It is primarily responsible for creating a
+ * {@link SolutionJudge}, but it is also used for customising some properties of
+ * the judge such as maximum score per test.
+ * 
+ * @author Nick Guletskii
+ *
+ */
 public interface SolutionJudgeFactory extends Serializable {
 
+	/**
+	 * @param properties
+	 *            Task configuration properties
+	 * @param storageFactory
+	 *            The shared temporary storage factory.
+	 *            {@see SharedTemporaryStorageFactory}
+	 * @return
+	 */
 	public SolutionJudge createJudge(Properties properties,
 			SharedTemporaryStorageFactory storageFactory);
 

@@ -30,15 +30,47 @@ import java.util.Map;
 
 import org.ng200.openolympus.cerberus.exceptions.CompilationException;
 
+/**
+ * Provides a common API to different compilers
+ * 
+ * @author Nick Guletskii
+ *
+ */
 public interface Compiler {
 	public void addArgument(String argument);
 
+	/**
+	 * Compiles a set of files.
+	 * 
+	 * @param inputFiles
+	 *            Files to compile.
+	 * @param outputFile
+	 *            Output file
+	 * @throws CompilationException
+	 *             If the compiler threw an error or the input files have
+	 *             compilation errors.
+	 * @throws IOException
+	 */
 	public default void compile(final List<Path> inputFiles,
 			final Path outputFile) throws CompilationException, IOException {
 		this.compile(inputFiles, outputFile, new HashMap<String, Object>());
 	}
 
+	/**
+	 * Compiles a set of files.
+	 * 
+	 * @param inputFiles
+	 *            Files to compile.
+	 * @param outputFile
+	 *            Output file
+	 * @param additionalParameters
+	 *            Additional parameters to pass to the compiler
+	 * @throws CompilationException
+	 *             If the compiler threw an error or the input files have
+	 *             compilation errors.
+	 * @throws IOException
+	 */
 	public void compile(List<Path> inputFiles, Path outputFile,
 			Map<String, Object> additionalParameters)
-			throws CompilationException, IOException;
+					throws CompilationException, IOException;
 }

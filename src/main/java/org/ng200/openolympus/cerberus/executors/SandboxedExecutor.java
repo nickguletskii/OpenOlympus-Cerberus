@@ -37,11 +37,20 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.ng200.openolympus.FileAccess;
 import org.ng200.openolympus.cerberus.ExecutionResult;
+import org.ng200.openolympus.cerberus.SecurityElevationCommandConfiguration;
 import org.ng200.openolympus.cerberus.SolutionJudge;
 import org.ng200.openolympus.cerberus.util.TemporaryStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ * An executor that executes native applications using OpenOlympus Watchdog
+ * inside a sandbox.
+ * 
+ * @author Nick Guletskii
+ *
+ */
 public class SandboxedExecutor extends OpenOlympusWatchdogExecutor implements
 		Executor {
 	public static final Path CHROOT_TEMPLATE_PATH = FileSystems.getDefault()
@@ -70,6 +79,11 @@ public class SandboxedExecutor extends OpenOlympusWatchdogExecutor implements
 		this.storage = storage;
 	}
 
+	/**
+	 * @param holder
+	 *            - the solution judge that this executor belongs to
+	 * @throws IOException
+	 */
 	public SandboxedExecutor(final SolutionJudge holder) throws IOException {
 		this.storage = new TemporaryStorage(holder);
 		SandboxedExecutor.logger.info("Chroot template path: {}",
@@ -79,11 +93,23 @@ public class SandboxedExecutor extends OpenOlympusWatchdogExecutor implements
 				this.storage.getPath());
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.io.Closeable#close()
+	 */
 	@Override
 	public void close() throws IOException {
 		this.storage.close();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ng200.openolympus.cerberus.executors.Executor#execute(java.nio.file.
+	 * Path)
+	 */
 	@Override
 	public ExecutionResult execute(final Path program) throws IOException {
 		SandboxedExecutor.logger.debug("Copying program into jail");
@@ -93,7 +119,9 @@ public class SandboxedExecutor extends OpenOlympusWatchdogExecutor implements
 		FileAccess.copy(program, chrootedProgram,
 				StandardCopyOption.COPY_ATTRIBUTES);
 
-		final CommandLine commandLine = new CommandLine("sudo");
+		final CommandLine commandLine = new CommandLine(
+				SecurityElevationCommandConfiguration
+						.getPriviligeEscalationExecutableName());
 		commandLine.addArgument("olympus_watchdog");
 
 		this.setUpOlrunnerLimits(commandLine);
@@ -136,21 +164,42 @@ public class SandboxedExecutor extends OpenOlympusWatchdogExecutor implements
 				"verdict.txt"));
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ng200.openolympus.cerberus.executors.Executor#getCpuLimit()
+	 */
 	@Override
 	public long getCpuLimit() {
 		return this.cpuLimit;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ng200.openolympus.cerberus.executors.Executor#getDiskLimit()
+	 */
 	@Override
 	public long getDiskLimit() {
 		return this.diskLimit;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ng200.openolympus.cerberus.executors.Executor#getErrorStream()
+	 */
 	@Override
 	public OutputStream getErrorStream() {
 		return this.errorStream;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ng200.openolympus.cerberus.executors.Executor#getFile(java.lang.
+	 * String, java.nio.file.Path)
+	 */
 	@Override
 	public void getFile(final String name, final Path destination)
 			throws IOException {
@@ -158,71 +207,139 @@ public class SandboxedExecutor extends OpenOlympusWatchdogExecutor implements
 				destination, StandardCopyOption.REPLACE_EXISTING);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ng200.openolympus.cerberus.executors.Executor#getInputStream()
+	 */
 	@Override
 	public InputStream getInputStream() {
 		return this.inputStream;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ng200.openolympus.cerberus.executors.Executor#getMemoryLimit()
+	 */
 	@Override
 	public long getMemoryLimit() {
 		return this.memoryLimit;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ng200.openolympus.cerberus.executors.Executor#getOutputStream()
+	 */
 	@Override
 	public OutputStream getOutputStream() {
 		return this.outputStream;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ng200.openolympus.cerberus.executors.Executor#getTimeLimit()
+	 */
 	@Override
 	public long getTimeLimit() {
 		return this.timeLimit;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ng200.openolympus.cerberus.executors.Executor#provideFile(java.nio.
+	 * file.Path)
+	 */
 	@Override
 	public void provideFile(final Path file) throws IOException {
-		SandboxedExecutor.logger.info("Providing file {}", file);
 		FileAccess.copy(
 				file,
 				this.storage.getPath().resolve("chroot")
 						.resolve(file.getFileName()));
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ng200.openolympus.cerberus.executors.Executor#setCpuLimit(long)
+	 */
 	@Override
 	public SandboxedExecutor setCpuLimit(final long cpuLimit) {
 		this.cpuLimit = cpuLimit;
 		return this;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ng200.openolympus.cerberus.executors.Executor#setDiskLimit(long)
+	 */
 	@Override
 	public SandboxedExecutor setDiskLimit(final long diskLimit) {
 		this.diskLimit = diskLimit;
 		return this;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ng200.openolympus.cerberus.executors.Executor#setErrorStream(java.io.
+	 * OutputStream)
+	 */
 	@Override
 	public SandboxedExecutor setErrorStream(final OutputStream errorStream) {
 		this.errorStream = errorStream;
 		return this;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ng200.openolympus.cerberus.executors.Executor#setInputStream(java.io.
+	 * InputStream)
+	 */
 	@Override
 	public SandboxedExecutor setInputStream(final InputStream inputStream) {
 		this.inputStream = inputStream;
 		return this;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ng200.openolympus.cerberus.executors.Executor#setMemoryLimit(long)
+	 */
 	@Override
 	public SandboxedExecutor setMemoryLimit(final long memoryLimit) {
 		this.memoryLimit = memoryLimit;
 		return this;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ng200.openolympus.cerberus.executors.Executor#setOutputStream(java.io
+	 * .OutputStream)
+	 */
 	@Override
 	public SandboxedExecutor setOutputStream(final OutputStream outputStream) {
 		this.outputStream = outputStream;
 		return this;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.ng200.openolympus.cerberus.executors.Executor#setTimeLimit(long)
+	 */
 	@Override
 	public SandboxedExecutor setTimeLimit(final long timeLimit) {
 		this.timeLimit = timeLimit;

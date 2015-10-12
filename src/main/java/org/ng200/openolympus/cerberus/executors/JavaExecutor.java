@@ -44,12 +44,19 @@ import org.apache.commons.exec.PumpStreamHandler;
 import org.ng200.openolympus.FileAccess;
 import org.ng200.openolympus.cerberus.ExecutionResult;
 import org.ng200.openolympus.cerberus.ExecutionResult.ExecutionResultType;
+import org.ng200.openolympus.cerberus.SecurityElevationCommandConfiguration;
 import org.ng200.openolympus.cerberus.SolutionJudge;
 import org.ng200.openolympus.cerberus.util.Lists;
 import org.ng200.openolympus.cerberus.util.TemporaryStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * An executor that executes JVM executables
+ * 
+ * @author Nick Guletskii
+ *
+ */
 public class JavaExecutor extends OpenOlympusWatchdogExecutor implements
 		Executor {
 
@@ -171,7 +178,9 @@ public class JavaExecutor extends OpenOlympusWatchdogExecutor implements
 
 		this.buildPolicy(chrootRoot, policyFile);
 
-		final CommandLine commandLine = new CommandLine("sudo");
+		final CommandLine commandLine = new CommandLine(
+				SecurityElevationCommandConfiguration
+						.getPriviligeEscalationExecutableName());
 		commandLine.addArgument("olympus_watchdog");
 
 		this.setUpOlrunnerLimits(commandLine);
@@ -325,8 +334,9 @@ public class JavaExecutor extends OpenOlympusWatchdogExecutor implements
 	@Override
 	protected void setUpOlrunnerLimits(final CommandLine commandLine)
 			throws ExecuteException, IOException {
+
 		commandLine.addArgument(MessageFormat.format("--memorylimit={0}",
-				Long.toString(this.getMemoryLimit())));
+				Long.toString(-1)));
 
 		commandLine.addArgument(MessageFormat.format("--cpulimit={0}",
 				Long.toString(this.getCpuLimit())));

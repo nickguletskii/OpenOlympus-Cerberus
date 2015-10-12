@@ -30,41 +30,134 @@ import java.nio.file.Path;
 
 import org.ng200.openolympus.cerberus.ExecutionResult;
 
+/**
+ * 
+ * An executor is responsible for controlling and monitoring the execution of an
+ * executable.
+ * 
+ * @author Nick Guletskii
+ *
+ */
+/**
+ * @author nick
+ *
+ */
 public interface Executor extends Closeable {
 
-	public abstract ExecutionResult execute(Path program) throws IOException;
+	/**
+	 * Executes and blocks until the executable has terminated.
+	 * 
+	 * @param executable
+	 *            Path to the executable to execute
+	 * @return The result of executing this executable
+	 * @throws IOException
+	 */
+	public abstract ExecutionResult execute(Path executable) throws IOException;
 
+	/**
+	 * @return the current CPU time limit in milliseconds
+	 */
 	public abstract long getCpuLimit();
 
+	/**
+	 * @return the current IO limit in bytes
+	 */
 	public abstract long getDiskLimit();
 
+	/**
+	 * @return the error output stream the executable should write to
+	 */
 	public abstract OutputStream getErrorStream();
 
-	public abstract void getFile(String name, Path destination)
+	/**
+	 * Copies a file from the sandbox into the specified destination.
+	 * 
+	 * @param path
+	 *            The path to the file inside the sandbox
+	 * @param destination
+	 *            The destination path to copy to
+	 * @throws IOException
+	 */
+	public abstract void getFile(String path, Path destination)
 			throws IOException;
 
+	/**
+	 * @return the input stream the executable should read from
+	 */
 	public abstract InputStream getInputStream();
 
+	/**
+	 * @return the memory limit in bytes
+	 */
 	public abstract long getMemoryLimit();
 
+	/**
+	 * @return the output stream the executable should write to.
+	 */
 	public abstract OutputStream getOutputStream();
 
+	/**
+	 * @return the time limit in milliseconds.
+	 */
 	public abstract long getTimeLimit();
 
+	/**
+	 * @param file
+	 *            Copies the file into the root of the sandbox.
+	 * @throws IOException
+	 */
 	public abstract void provideFile(Path file) throws IOException;
 
+	/**
+	 * @param cpuLimit
+	 *            the CPU time limit in milliseconds
+	 * @return this
+	 */
 	public abstract Executor setCpuLimit(long cpuLimit);
 
+	/**
+	 * @param diskLimit
+	 *            the IO limit in bytes
+	 * @return this
+	 */
 	public abstract Executor setDiskLimit(long diskLimit);
 
+	/**
+	 * Sets the error output stream the executable should write to.
+	 * 
+	 * @param errorStream
+	 * @return this
+	 */
 	public abstract Executor setErrorStream(OutputStream errorStream);
 
+	/**
+	 * Sets the input stream the executable should read from.
+	 * 
+	 * @param inputStream
+	 * @return this
+	 */
 	public abstract Executor setInputStream(InputStream inputStream);
 
+	/**
+	 * @param memoryLimit
+	 *            the memory limit in bytes
+	 * @return this
+	 */
 	public abstract Executor setMemoryLimit(long memoryLimit);
 
+	/**
+	 * Sets the output stream the executable should write to
+	 * 
+	 * @param outputStream
+	 * @return this
+	 */
 	public abstract Executor setOutputStream(OutputStream outputStream);
 
+	/**
+	 * @param timeLimit
+	 *            the real time limit in milliseconds
+	 * @return this
+	 */
 	public abstract Executor setTimeLimit(long timeLimit);
 
 }

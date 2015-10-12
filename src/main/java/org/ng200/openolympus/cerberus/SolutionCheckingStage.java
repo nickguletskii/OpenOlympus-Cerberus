@@ -23,5 +23,16 @@
 package org.ng200.openolympus.cerberus;
 
 public enum SolutionCheckingStage {
-	COMPILATION, PREPARATION, RUNTIME, ANSWER
+	/**
+	 * The solution is being compiled
+	 */
+	COMPILATION,
+	/**
+	 * The solution is being executed
+	 */
+	RUNTIME,
+	/**
+	 * The solution's answer is being checked
+	 */
+	ANSWER
 }

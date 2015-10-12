@@ -44,6 +44,13 @@ import org.ng200.openolympus.cerberus.exceptions.CompilerError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ * An implementation of a {@link Compiler} which calls the GNU C++ compiler.
+ * 
+ * @author Nick Guletskii
+ *
+ */
 public class GNUCompiler implements Compiler {
 	private static final Logger logger = LoggerFactory
 			.getLogger(GNUCompiler.class);
@@ -65,10 +72,17 @@ public class GNUCompiler implements Compiler {
 		this.arguments = arguments;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.ng200.openolympus.cerberus.compilers.Compiler#compile(java.util.List,
+	 * java.nio.file.Path, java.util.Map)
+	 */
 	@Override
 	public void compile(final List<Path> inputFiles, final Path outputFile,
 			final Map<String, Object> additionalParameters)
-			throws CompilationException {
+					throws CompilationException {
 		GNUCompiler.logger.debug("Compiling {} to {} using GCC", inputFiles,
 				outputFile);
 
@@ -94,12 +108,13 @@ public class GNUCompiler implements Compiler {
 
 		final DefaultExecutor executor = new DefaultExecutor();
 		executor.setExitValues(new int[] {
-				0,
-				1
+											0,
+											1
 		});
 
 		final ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
-		executor.setStreamHandler(new PumpStreamHandler(null, errorStream, null));
+		executor.setStreamHandler(
+				new PumpStreamHandler(null, errorStream, null));
 
 		executor.setWatchdog(new ExecuteWatchdog(20000));// 20 seconds to
 		// compile
@@ -126,7 +141,8 @@ public class GNUCompiler implements Compiler {
 										.map(file -> Pattern.quote(file
 												.toAbsolutePath().toString()))
 										.collect(Collectors.joining("|"))
-								+ "):", Pattern.MULTILINE);
+								+ "):",
+						Pattern.MULTILINE);
 				errorString = pattern.matcher(errorString).replaceAll("");
 
 				GNUCompiler.logger.debug("Compilation error: {}", errorString);

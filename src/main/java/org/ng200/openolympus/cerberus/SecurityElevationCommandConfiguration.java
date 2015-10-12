@@ -22,25 +22,21 @@
  */
 package org.ng200.openolympus.cerberus;
 
-import java.io.Serializable;
+public class SecurityElevationCommandConfiguration {
+	private static String priviligeEscalationExecutableName = "sudo";
 
-/**
- * 
- * Class that encapsulates the result of the solution's answer being checked
- * against the expected answer.
- * 
- * @author Nick Guletskii
- *
- */
-public abstract class AnswerCheckResult implements Serializable {
-	public static enum CheckingResultType {
-		OK, PRESENTATION_ERROR, WRONG_ANSWER
+	static {
+		priviligeEscalationExecutableName = System
+				.getProperty("priviligeEscalationExecutableName", "sudo");
 	}
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 7788554909663401190L;
+	public static String getPriviligeEscalationExecutableName() {
+		return priviligeEscalationExecutableName;
+	}
 
-	public abstract CheckingResultType getCheckingResultType();
+	public static void setPriviligeEscalationExecutableName(
+			String priviligeEscalationExecutableName) {
+		SecurityElevationCommandConfiguration.priviligeEscalationExecutableName = priviligeEscalationExecutableName;
+	}
+
 }

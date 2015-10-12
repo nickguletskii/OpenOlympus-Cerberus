@@ -22,6 +22,11 @@
  */
 package org.ng200.openolympus.cerberus;
 
+/**
+ * 
+ * @author Nick Guletskii
+ *
+ */
 public class VerifierResult extends AnswerCheckResult {
 
 	/**

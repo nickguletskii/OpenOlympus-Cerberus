@@ -28,6 +28,20 @@ import java.util.Properties;
 
 import org.ng200.openolympus.SharedTemporaryStorageFactory;
 
+/**
+ *
+ * Default solution judge factory, creates {@link DefaultSolutionJudge}.
+ * 
+ * Properties:
+ * <ul>
+ * <li>maximumScorePerTest - maximum score per test.</li>
+ * <li>consoleIO - boolean value which determines whether to use standard
+ * input/output or use file-based input/output. If false, input.txt and
+ * output.txt will be used.</li>
+ * </ul>
+ * 
+ * @author Nick Guletskii
+ */
 public class DefaultSolutionJudgeFactory implements SolutionJudgeFactory {
 
 	/**
@@ -39,8 +53,10 @@ public class DefaultSolutionJudgeFactory implements SolutionJudgeFactory {
 	public SolutionJudge createJudge(final Properties properties,
 			final SharedTemporaryStorageFactory sharedTemporaryStorageFactory) {
 		try {
-			return new DefaultSolutionJudge("input.txt", "output.txt",
+			return new DefaultSolutionJudge(
 					Boolean.valueOf(properties.getProperty("consoleIO")),
+					"input.txt",
+					"output.txt",
 					"US-ASCII", sharedTemporaryStorageFactory);
 		} catch (final IOException e) {
 			throw new RuntimeException("Couldn't create solution judge: ", e);

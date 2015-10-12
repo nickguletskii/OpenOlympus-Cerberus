@@ -36,20 +36,32 @@ import org.ng200.openolympus.cerberus.SolutionJudge;
 
 public class TemporaryStorage implements AutoCloseable {
 
+	/**
+	 * Closes all temporary storages associated with a judge.
+	 * 
+	 * @param judge
+	 */
 	public static void cleanUp(final SolutionJudge judge) {
 		TemporaryStorage.storages.computeIfAbsent(judge,
 				(key) -> new ArrayList<>()).forEach(
-				(storage) -> {
-					try {
-						storage.close();
-					} catch (final Exception e) {
-						throw new RuntimeException(
-								"Couldn't clean up temporary storage: ", e);
-					}
-				});
+						(storage) -> {
+							try {
+								storage.close();
+							} catch (final Exception e) {
+								throw new RuntimeException(
+										"Couldn't clean up temporary storage: ",
+										e);
+							}
+						});
 		TemporaryStorage.storages.remove(judge);
 	}
 
+	/**
+	 * Associates an instance of TemporaryStorage with a judge.
+	 * 
+	 * @param holder
+	 * @param temporaryStorage
+	 */
 	private static void register(final SolutionJudge holder,
 			final TemporaryStorage temporaryStorage) {
 		TemporaryStorage.storages.computeIfAbsent(holder,
@@ -62,29 +74,34 @@ public class TemporaryStorage implements AutoCloseable {
 
 	private Path directory;
 
+	/**
+	 * @return the root directory.
+	 */
 	public Path getDirectory() {
 		return directory;
 	}
 
+	/**
+	 * Sets the root directory
+	 * 
+	 * @param directory
+	 */
 	public void setDirectory(Path directory) {
 		this.directory = directory;
 	}
 
+	/**
+	 * @return true if the stroage has already been cleaned up.
+	 */
 	public boolean isClosed() {
 		return closed;
 	}
 
+	/**
+	 * Shouldn't be called directly.
+	 */
 	public void setClosed(boolean closed) {
 		this.closed = closed;
-	}
-
-	public static ConcurrentMap<SolutionJudge, List<TemporaryStorage>> getStorages() {
-		return storages;
-	}
-
-	public static void setStorages(
-			ConcurrentMap<SolutionJudge, List<TemporaryStorage>> storages) {
-		TemporaryStorage.storages = storages;
 	}
 
 	private boolean closed;
@@ -115,12 +132,18 @@ public class TemporaryStorage implements AutoCloseable {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.AutoCloseable#close()
+	 */
 	@Override
 	public synchronized void close() throws IOException {
 		FileAccess.deleteDirectoryByWalking(this.directory);
 		this.closed = true;
 	}
 
+	/**
+	 * @return the path to the root directory
+	 */
 	public synchronized Path getPath() {
 		this.assertNotClosed();
 		return this.directory;

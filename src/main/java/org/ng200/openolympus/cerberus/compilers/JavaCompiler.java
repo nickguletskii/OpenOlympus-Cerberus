@@ -44,6 +44,13 @@ import org.ng200.openolympus.cerberus.exceptions.CompilerError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ * An implementation of a {@link Compiler} which calls the Java compiler.
+ * 
+ * @author Nick Guletskii
+ *
+ */
 public class JavaCompiler implements Compiler {
 	private static final Logger logger = LoggerFactory
 			.getLogger(JavaCompiler.class);
@@ -65,10 +72,13 @@ public class JavaCompiler implements Compiler {
 		this.arguments = arguments;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ng200.openolympus.cerberus.compilers.Compiler#compile(java.util.List, java.nio.file.Path, java.util.Map)
+	 */
 	@Override
 	public void compile(final List<Path> inputFiles, final Path outputFile,
 			final Map<String, Object> additionalParameters)
-			throws CompilationException, IOException {
+					throws CompilationException, IOException {
 
 		FileAccess.createDirectories(outputFile);
 
@@ -94,12 +104,13 @@ public class JavaCompiler implements Compiler {
 
 		final DefaultExecutor executor = new DefaultExecutor();
 		executor.setExitValues(new int[] {
-				0,
-				1
+											0,
+											1
 		});
 
 		final ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
-		executor.setStreamHandler(new PumpStreamHandler(null, errorStream, null));
+		executor.setStreamHandler(
+				new PumpStreamHandler(null, errorStream, null));
 
 		executor.setWatchdog(new ExecuteWatchdog(20000));// 20 seconds to
 		// compile
@@ -124,7 +135,8 @@ public class JavaCompiler implements Compiler {
 										.map(file -> Pattern.quote(file
 												.toAbsolutePath().toString()))
 										.collect(Collectors.joining("|"))
-								+ "):", Pattern.MULTILINE);
+								+ "):",
+						Pattern.MULTILINE);
 				errorString = pattern.matcher(errorString).replaceAll("");
 
 				JavaCompiler.logger.debug("Compilation error: {}", errorString);

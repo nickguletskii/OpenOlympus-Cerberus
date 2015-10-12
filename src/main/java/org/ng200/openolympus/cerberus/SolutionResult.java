@@ -28,26 +28,62 @@ import java.util.Map;
 
 public class SolutionResult implements Serializable {
 	public static enum Result {
+		/**
+		 * The solution passed the test.
+		 */
 		OK("solution.result.ok"),
 
+		/**
+		 * The solution has exceeded the time limit, be it CPU time or real
+		 * time.
+		 */
 		TIME_LIMIT("solution.result.timeLimit"),
 
+		/**
+		 * The solution attempted to allocate more memory than it is allowed to.
+		 */
 		MEMORY_LIMIT("solution.result.memoryLimit"),
 
+		/**
+		 * The executable exceeded the limit on bytes written to disk.
+		 */
 		OUTPUT_LIMIT("solution.result.outputLimit"),
 
+		/**
+		 * Runtime error - the executable exited incorrectly.
+		 */
 		RUNTIME_ERROR("solution.result.runtimeError"),
 
+		/**
+		 * Internal error - a testing system component has failed.
+		 */
 		INTERNAL_ERROR("solution.result.internalError"),
 
+		/**
+		 * The executable attempted to break out of the sandbox or circumvent
+		 * security measures otherwise.
+		 */
 		SECURITY_VIOLATION("solution.result.securityViolation"),
 
+		/**
+		 * The solution couldn't be compiled.
+		 */
 		COMPILE_ERROR("solution.result.compileError"),
 
+		/**
+		 * The solution's output isn't properly formatted.
+		 */
 		PRESENTATION_ERROR("solution.result.presentationError"),
 
+		/**
+		 * The solution generated an answer that was rejected by the judge as it
+		 * is incorrect.
+		 */
 		WRONG_ANSWER("solution.result.wrongAnswer"),
 
+		/**
+		 * The solution is being tested.
+		 */
 		WAITING("solution.result.waiting");
 
 		private String translationKey;

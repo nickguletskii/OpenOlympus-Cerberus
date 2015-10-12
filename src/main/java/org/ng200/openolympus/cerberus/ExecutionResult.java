@@ -22,9 +22,51 @@
  */
 package org.ng200.openolympus.cerberus;
 
+/**
+ * 
+ * This class encapsulates the result of an executable being executed in a
+ * sandbox or otherwise.
+ * 
+ * @author Nick Guletskii
+ *
+ */
 public class ExecutionResult {
 	public static enum ExecutionResultType {
-		OK, SECURITY_VIOLATION, MEMORY_LIMIT, OUTPUT_LIMIT, TIME_LIMIT, RUNTIME_ERROR, ABNORMAL_TERMINATION, INTERNAL_ERROR, INCORRECT_SECURITY_CONFIG
+		/**
+		 * OK
+		 */
+		OK,
+		/**
+		 * The executable attempted to break out of the sandbox or circumvent
+		 * security measures otherwise.
+		 */
+		SECURITY_VIOLATION,
+		/**
+		 * Memory limit exceed - the executable attempted to allocate more
+		 * memory than allowed.
+		 */
+		MEMORY_LIMIT,
+		/**
+		 * The executable exceeded the limit on bytes written to disk.
+		 */
+		OUTPUT_LIMIT,
+		/**
+		 * The executable was forcibly terminated because it didn't terminate in
+		 * time, be it CPU time or real time.
+		 */
+		TIME_LIMIT,
+		/**
+		 * Runtime error - the executable exited incorrectly.
+		 */
+		RUNTIME_ERROR,
+		/**
+		 * Internal error - a testing system component has failed.
+		 */
+		INTERNAL_ERROR,
+		/**
+		 * The security system isn't properly configured.
+		 */
+		INCORRECT_SECURITY_CONFIG
 
 	}
 
@@ -33,11 +75,11 @@ public class ExecutionResult {
 	private long realTime;
 	private long cpuTime;
 	private long syscall;
-	
-	public ExecutionResult(){
+
+	public ExecutionResult() {
 		// Serialization constructor
 	}
-			
+
 	public ExecutionResult(final ExecutionResultType resultType,
 			final long realTime, final long cpuTime, final long memoryPeak,
 			final long syscall) {

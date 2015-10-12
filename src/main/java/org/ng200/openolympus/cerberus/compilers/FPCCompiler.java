@@ -42,6 +42,13 @@ import org.ng200.openolympus.cerberus.exceptions.CompilerError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ * An implementation of a {@link Compiler} which calls the Free Pascal Compiler.
+ * 
+ * @author Nick Guletskii
+ *
+ */
 public class FPCCompiler implements Compiler {
 	private static final Logger logger = LoggerFactory
 			.getLogger(FPCCompiler.class);
@@ -63,10 +70,13 @@ public class FPCCompiler implements Compiler {
 		return arguments;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.ng200.openolympus.cerberus.compilers.Compiler#compile(java.util.List, java.nio.file.Path, java.util.Map)
+	 */
 	@Override
 	public void compile(final List<Path> inputFiles, final Path outputFile,
 			final Map<String, Object> additionalParameters)
-			throws CompilationException {
+					throws CompilationException {
 		FPCCompiler.logger.debug("Compiling {} to {} using FPC", inputFiles,
 				outputFile);
 
@@ -90,12 +100,13 @@ public class FPCCompiler implements Compiler {
 
 		final DefaultExecutor executor = new DefaultExecutor();
 		executor.setExitValues(new int[] {
-				0,
-				1
+											0,
+											1
 		});
 
 		final ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
-		executor.setStreamHandler(new PumpStreamHandler(errorStream, null, null));
+		executor.setStreamHandler(
+				new PumpStreamHandler(errorStream, null, null));
 
 		executor.setWatchdog(new ExecuteWatchdog(20000));// 20 seconds to
 		// compile
@@ -113,7 +124,7 @@ public class FPCCompiler implements Compiler {
 			try {
 				final String errorString = errorStream.toString("UTF-8");
 
-				final Pattern pattern = Pattern
+				Pattern
 						.compile(
 								"^("
 										+ inputFiles
@@ -123,7 +134,8 @@ public class FPCCompiler implements Compiler {
 														.toString()))
 												.collect(
 														Collectors.joining("|"))
-										+ ")", Pattern.MULTILINE);
+										+ ")",
+								Pattern.MULTILINE);
 
 				FPCCompiler.logger.debug("Compilation error: {}", errorString);
 

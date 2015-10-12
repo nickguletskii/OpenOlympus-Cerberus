@@ -27,11 +27,30 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.ng200.openolympus.cerberus.util.TemporaryStorage;
+
+/**
+ * Class responsible for cleaning up local objects such as
+ * {@link TemporaryStorage}
+ * 
+ * @author Nick Guletskii
+ *
+ */
 public class Janitor {
+	/**
+	 * Clean up all local resources associated with a judge
+	 * 
+	 * @param judge
+	 */
 	public static void cleanUp(final SolutionJudge judge) {
 		Janitor.cleanupSteps.forEach((step) -> step.accept(judge));
 	}
 
+	/**
+	 * Registers a step to run when disposing of a local instance of a judge.
+	 * 
+	 * @param cleanupStep
+	 */
 	public static void registerCleanupStep(
 			final Consumer<SolutionJudge> cleanupStep) {
 		Janitor.cleanupSteps.add(cleanupStep);

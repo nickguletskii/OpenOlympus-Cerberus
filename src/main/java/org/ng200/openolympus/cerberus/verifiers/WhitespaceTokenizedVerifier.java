@@ -27,19 +27,25 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.ng200.openolympus.FileAccess;
 import org.ng200.openolympus.cerberus.AnswerCheckResult;
 import org.ng200.openolympus.cerberus.VerifierResult;
 
+import com.google.common.collect.Iterators;
+
+/**
+ * @author Nick Guletskii
+ *
+ */
 public class WhitespaceTokenizedVerifier {
 
 	private Path file;
 
 	private final Pattern removeWhitespaceBeforeEOL = Pattern.compile("\\s+$");
-	private final Pattern removeDuplicateWhitespace = Pattern.compile("(\\s)+");
+	private final Pattern removeDuplicateWhitespace = Pattern
+			.compile("(\\s)\\1");
 
 	public WhitespaceTokenizedVerifier() {
 		// Serialization constructor
@@ -57,17 +63,15 @@ public class WhitespaceTokenizedVerifier {
 		this.file = file;
 	}
 
-	public VerifierResult isAnswerCorrect(final byte[] userByteArray,
+	public VerifierResult isAnswerCorrect(final BufferedReader bufferedReader,
 			final Charset charset) throws IOException {
 
-		String userAnswer = new String(userByteArray, charset);
-		String properAnswer = null;
-		userAnswer = Stream
-				.of(userAnswer.split("\n"))
+		Stream<String> properAnswer = null;
+		Stream<String> userAnswer = bufferedReader.lines()
 				.map((line) -> this.removeWhitespaceBeforeEOL.matcher(line)
 						.replaceAll(""))
 				.map((line) -> this.removeDuplicateWhitespace.matcher(line)
-						.replaceAll(" ")).collect(Collectors.joining("\n"));
+						.replaceAll(" "));
 
 		try (BufferedReader properAnswerReader = FileAccess.newBufferedReader(
 				this.file, charset)) {
@@ -76,18 +80,14 @@ public class WhitespaceTokenizedVerifier {
 					.map((line) -> this.removeWhitespaceBeforeEOL.matcher(line)
 							.replaceAll(""))
 					.map((line) -> this.removeDuplicateWhitespace.matcher(line)
-							.replaceAll(" ")).collect(Collectors.joining("\n"));
-		}
+							.replaceAll(" "));
 
-		userAnswer = this.removeWhitespaceBeforeEOL.matcher(userAnswer)
-				.replaceAll("");
-		properAnswer = this.removeWhitespaceBeforeEOL.matcher(properAnswer)
-				.replaceAll("");
-
-		if (!userAnswer.equals(properAnswer)) {
-			return new VerifierResult(
-					AnswerCheckResult.CheckingResultType.WRONG_ANSWER,
-					"verifier.tokens.mismatch");
+			if (!Iterators.elementsEqual(userAnswer.iterator(),
+					properAnswer.iterator())) {
+				return new VerifierResult(
+						AnswerCheckResult.CheckingResultType.WRONG_ANSWER,
+						"verifier.tokens.mismatch");
+			}
 		}
 		return new VerifierResult(AnswerCheckResult.CheckingResultType.OK,
 				"verifier.tokens.match");

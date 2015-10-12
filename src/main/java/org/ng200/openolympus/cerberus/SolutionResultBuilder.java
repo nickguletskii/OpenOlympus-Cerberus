@@ -256,11 +256,6 @@ public class SolutionResultBuilder implements Serializable {
 			this.syscall = result.getSyscall();
 
 			switch (result.getResultType()) {
-			case ABNORMAL_TERMINATION:
-				this.setStatus(SolutionResult.Result.RUNTIME_ERROR);
-				this.fail(SolutionCheckingStage.RUNTIME,
-						"#errors.abnormalTermination");
-				return this;
 			case INCORRECT_SECURITY_CONFIG:
 				this.setStatus(SolutionResult.Result.INTERNAL_ERROR);
 				this.fail(SolutionCheckingStage.RUNTIME,

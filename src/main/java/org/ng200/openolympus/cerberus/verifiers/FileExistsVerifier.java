@@ -32,8 +32,21 @@ import org.ng200.openolympus.cerberus.AnswerCheckResult;
 import org.ng200.openolympus.cerberus.VerifierResult;
 import org.ng200.openolympus.cerberus.util.ExceptionalRunnable;
 
+/**
+ * 
+ * Verifies that the file exists.
+ * 
+ * @author Nick Guletskii
+ *
+ */
 public class FileExistsVerifier {
 
+	/**
+	 * Checks if the file exists.
+	 * 
+	 * @param userOutputFile
+	 * @return
+	 */
 	public static AnswerCheckResult fileExists(final Path userOutputFile) {
 		if (FileAccess.exists(userOutputFile)
 				&& FileAccess.isFile(userOutputFile)) {
@@ -45,6 +58,14 @@ public class FileExistsVerifier {
 				"#verifier.file.doesntexist");
 	}
 
+	/**
+	 * Runs the runnable and checks that it didn't throw a
+	 * {@link NoSuchFileException} or a {@FileNotFoundException}.
+	 * 
+	 * @param run
+	 * @return
+	 * @throws IOException
+	 */
 	public static AnswerCheckResult noFileNotFoundException(
 			final ExceptionalRunnable<IOException> run) throws IOException {
 		try {

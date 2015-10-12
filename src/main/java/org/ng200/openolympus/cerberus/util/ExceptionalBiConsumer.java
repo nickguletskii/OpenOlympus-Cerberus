@@ -20,27 +20,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.ng200.openolympus.cerberus;
+package org.ng200.openolympus.cerberus.util;
 
-import java.io.Serializable;
-
-/**
- * 
- * Class that encapsulates the result of the solution's answer being checked
- * against the expected answer.
- * 
- * @author Nick Guletskii
- *
- */
-public abstract class AnswerCheckResult implements Serializable {
-	public static enum CheckingResultType {
-		OK, PRESENTATION_ERROR, WRONG_ANSWER
-	}
-
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 7788554909663401190L;
-
-	public abstract CheckingResultType getCheckingResultType();
+@FunctionalInterface
+public interface ExceptionalBiConsumer<T, U> {
+	public void accept(T t, U u) throws Exception;
 }
