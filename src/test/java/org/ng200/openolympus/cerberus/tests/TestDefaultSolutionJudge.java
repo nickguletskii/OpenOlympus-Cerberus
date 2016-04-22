@@ -82,7 +82,8 @@ public class TestDefaultSolutionJudge {
 		final SharedTemporaryStorageFactory storageFactory = new SharedTemporaryStorageFactory(
 				FileSystems.getDefault().getPath("/tmp/"));
 		final DefaultSolutionJudge judge = new DefaultSolutionJudge(
-				true, "input.txt", "output.txt", "US-ASCII", storageFactory);
+				true, "input.txt", "output.txt", "US-ASCII", storageFactory,
+				true);
 		try (TemporaryStorage storage = new TemporaryStorage(judge);) {
 
 			final Path testSrc = storage.getPath().resolve(filename);
@@ -111,7 +112,8 @@ public class TestDefaultSolutionJudge {
 		final SharedTemporaryStorageFactory storageFactory = new SharedTemporaryStorageFactory(
 				FileSystems.getDefault().getPath("/tmp/"));
 		final DefaultSolutionJudge judge = new DefaultSolutionJudge(
-				true, "input.txt", "output.txt", "US-ASCII", storageFactory);
+				true, "input.txt", "output.txt", "US-ASCII", storageFactory,
+				true);
 		try (TemporaryStorage storage = new TemporaryStorage(judge);) {
 
 			final Path testSrc = storage.getPath().resolve(fileName);
@@ -136,13 +138,13 @@ public class TestDefaultSolutionJudge {
 	public void testDefaultSolutionJudgeOnCpp() throws Exception {
 		this.successfulTest("test.cpp", new StringBuilder()
 
-		.append("#include<iostream>\n")
+				.append("#include<iostream>\n")
 
-		.append("int main(){\n")
+				.append("int main(){\n")
 
-		.append("std::cout<<\"hello world\"<<std::endl;\n")
+				.append("std::cout<<\"hello world\"<<std::endl;\n")
 
-		.append("}").toString());
+				.append("}").toString());
 	}
 
 	@Test
@@ -156,30 +158,30 @@ public class TestDefaultSolutionJudge {
 			throws Exception {
 		this.runtimeErrorTest("test.cpp", new StringBuilder()
 
-		.append("#include<iostream>\n")
+				.append("#include<iostream>\n")
 
-		.append("#include<fstream>\n")
-		
-		.append("using namespace std;\n")
+				.append("#include<fstream>\n")
 
-		.append("int main(){\n")
+				.append("using namespace std;\n")
 
-		.append("return -1;\n")
+				.append("int main(){\n")
 
-		.append("}").toString());
+				.append("return -1;\n")
+
+				.append("}").toString());
 	}
 
 	@Test
 	public void testDefaultSolutionJudgeOnFPC() throws Exception {
 		this.successfulTest("test.pas", new StringBuilder()
 
-		.append("program Hello;\n")
+				.append("program Hello;\n")
 
-		.append("begin\n")
+				.append("begin\n")
 
-		.append("writeln ('hello world')\n")
+				.append("writeln ('hello world')\n")
 
-		.append("end.").toString());
+				.append("end.").toString());
 	}
 
 	@Test
@@ -192,13 +194,13 @@ public class TestDefaultSolutionJudge {
 	public void testDefaultSolutionJudgeOnJava() throws Exception {
 		this.successfulTest("Main.java", new StringBuilder()
 
-		.append("public class Main {")
+				.append("public class Main {")
 
-		.append("public static void main(String[] args) {")
+				.append("public static void main(String[] args) {")
 
-		.append("System.out.println(\"hello world\");\n")
+				.append("System.out.println(\"hello world\");\n")
 
-		.append("}\n}").toString());
+				.append("}\n}").toString());
 	}
 
 	@Test

@@ -57,7 +57,9 @@ public class DefaultSolutionJudgeFactory implements SolutionJudgeFactory {
 					Boolean.valueOf(properties.getProperty("consoleIO")),
 					"input.txt",
 					"output.txt",
-					"US-ASCII", sharedTemporaryStorageFactory);
+					"US-ASCII", sharedTemporaryStorageFactory,
+					Boolean.valueOf(properties
+							.getProperty("deduplicateWhitespace", "true")));
 		} catch (final IOException e) {
 			throw new RuntimeException("Couldn't create solution judge: ", e);
 		}

@@ -99,6 +99,8 @@ public class DefaultSolutionJudge extends SolutionJudge {
 
 	private ProgramLanguage programLanguage = null;
 
+	private boolean deduplicateWhitespace;
+
 	/**
 	 * Constructor used by the serialisation layer. Please don't call this
 	 * directly.
@@ -126,13 +128,17 @@ public class DefaultSolutionJudge extends SolutionJudge {
 	 *            The charset to use when processing test data.
 	 * @param storageFactory
 	 *            The storage factory. {@see SharedTemporaryStorageFactory}
+	 * @param deduplicateWhitespace
+	 *            If true, the checker will remove duplicate whitespace in the
+	 *            output file before checking the answer.
 	 * @throws IOException
 	 */
 	public DefaultSolutionJudge(final boolean consoleInput,
 			final String inputFileName, final String outputFileName,
 			final String charset,
-			final SharedTemporaryStorageFactory storageFactory)
-					throws IOException {
+			final SharedTemporaryStorageFactory storageFactory,
+			boolean deduplicateWhitespace)
+			throws IOException {
 		this.inputFileName = inputFileName;
 		this.outputFileName = outputFileName;
 		this.consoleInput = consoleInput;
@@ -173,9 +179,10 @@ public class DefaultSolutionJudge extends SolutionJudge {
 			final BigDecimal maximumScore) {
 		resultBuilder.checkingStage(
 				() -> {
-					return new WhitespaceTokenizedVerifier(outputFile)
-							.isAnswerCorrect(bufferedReader,
-									Charset.forName(this.charset));
+					return new WhitespaceTokenizedVerifier(outputFile,
+							isDeduplicateWhitespace(), true)
+									.isAnswerCorrect(bufferedReader,
+											Charset.forName(this.charset));
 				}).checkingStage(
 						() -> {
 							resultBuilder.setScore(maximumScore);
@@ -213,7 +220,7 @@ public class DefaultSolutionJudge extends SolutionJudge {
 	private void checkAnswerFile(final SolutionResultBuilder resultBuilder,
 			final Path inputFile, final Path outputFile,
 			final Path userOutputFile, final BigDecimal maximumScore)
-					throws IOException {
+			throws IOException {
 		try (BufferedReader solutionOutputReader = FileAccess
 				.newBufferedReader(userOutputFile);) {
 			this.checkAnswer(resultBuilder, inputFile, outputFile,
@@ -677,6 +684,14 @@ public class DefaultSolutionJudge extends SolutionJudge {
 
 	public void setSharedStorage(SharedTemporaryStorage sharedStorage) {
 		this.sharedStorage = sharedStorage;
+	}
+
+	public boolean isDeduplicateWhitespace() {
+		return deduplicateWhitespace;
+	}
+
+	public void setDeduplicateWhitespace(boolean deduplicateWhitespace) {
+		this.deduplicateWhitespace = deduplicateWhitespace;
 	}
 
 }

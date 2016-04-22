@@ -47,6 +47,10 @@ public class WhitespaceTokenizedVerifier {
 	private final Pattern removeDuplicateWhitespace = Pattern
 			.compile("(\\s)\\1");
 
+	private boolean deduplicateWhitespace;
+
+	private boolean stripWhitespaceBeforeEOL;
+
 	public WhitespaceTokenizedVerifier() {
 		// Serialization constructor
 	}
@@ -59,28 +63,49 @@ public class WhitespaceTokenizedVerifier {
 		this.file = file;
 	}
 
-	public WhitespaceTokenizedVerifier(final Path file) {
+	public boolean isDeduplicateWhitespace() {
+		return deduplicateWhitespace;
+	}
+
+	public void setDeduplicateWhitespace(boolean deduplicateWhitespace) {
+		this.deduplicateWhitespace = deduplicateWhitespace;
+	}
+
+	public boolean isStripWhitespaceBeforeEOL() {
+		return stripWhitespaceBeforeEOL;
+	}
+
+	public void setStripWhitespaceBeforeEOL(boolean stripWhitespaceBeforeEOL) {
+		this.stripWhitespaceBeforeEOL = stripWhitespaceBeforeEOL;
+	}
+
+	public WhitespaceTokenizedVerifier(final Path file,
+			boolean deduplicateWhitespace, boolean stripWhitespaceBeforeEOL) {
 		this.file = file;
+		this.deduplicateWhitespace = deduplicateWhitespace;
+		this.stripWhitespaceBeforeEOL = stripWhitespaceBeforeEOL;
+	}
+
+	public Stream<String> applyTransformations(Stream<String> str) {
+		if (this.stripWhitespaceBeforeEOL)
+			str = str.map((line) -> this.removeWhitespaceBeforeEOL.matcher(line)
+					.replaceAll(""));
+		if (this.deduplicateWhitespace)
+			str = str.map((line) -> this.removeDuplicateWhitespace.matcher(line)
+					.replaceAll(" "));
+		return str;
 	}
 
 	public VerifierResult isAnswerCorrect(final BufferedReader bufferedReader,
 			final Charset charset) throws IOException {
 
 		Stream<String> properAnswer = null;
-		Stream<String> userAnswer = bufferedReader.lines()
-				.map((line) -> this.removeWhitespaceBeforeEOL.matcher(line)
-						.replaceAll(""))
-				.map((line) -> this.removeDuplicateWhitespace.matcher(line)
-						.replaceAll(" "));
+		Stream<String> userAnswer = applyTransformations(
+				bufferedReader.lines());
 
 		try (BufferedReader properAnswerReader = FileAccess.newBufferedReader(
 				this.file, charset)) {
-			properAnswer = properAnswerReader
-					.lines()
-					.map((line) -> this.removeWhitespaceBeforeEOL.matcher(line)
-							.replaceAll(""))
-					.map((line) -> this.removeDuplicateWhitespace.matcher(line)
-							.replaceAll(" "));
+			properAnswer = applyTransformations(properAnswerReader.lines());
 
 			if (!Iterators.elementsEqual(userAnswer.iterator(),
 					properAnswer.iterator())) {
